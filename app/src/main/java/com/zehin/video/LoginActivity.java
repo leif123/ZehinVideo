@@ -26,8 +26,6 @@ public class LoginActivity extends Activity implements View.OnClickListener{
         button2.setOnClickListener(this);
     }
 
-
-
     @Override
     public void onClick(View v) {
         if (v == button1){
