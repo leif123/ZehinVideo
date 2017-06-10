@@ -153,6 +153,15 @@ public class VideoSDK {
         Video.getInstance().videoMessageData(width, height, data);
     }
 
+    /**
+     * 当前视频播放时间
+     * @param year
+     * @param month
+     * @param day
+     * @param hour
+     * @param minute
+     * @param second
+     */
     public static void vPaasSDK_PlayBackTime(int year, int month, int day, int hour, int minute, int second){
 //        ActivityMenu4_Detail1_PlayBack.upDataTime(hour,minute,second);
     }
@@ -173,7 +182,6 @@ public class VideoSDK {
      * @param iStopTime 结束时间
      */
     public static void vPaasSDK_VideoPlayRecord(int iCamID,int iDate, int iResultSize, int[] iStartTime, int[] iStopTime){
-    	System.out.println("------------>vPaasSDK_VideoPlayRecord");
 //    	VideoActivity.videoPlayRecord(iCamID,iDate,iResultSize,iStartTime,iStopTime);
     }
 }
