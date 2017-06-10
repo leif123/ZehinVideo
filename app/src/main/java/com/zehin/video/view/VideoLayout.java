@@ -223,6 +223,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener{
      */
     public interface VideoLayoutClickListener{
         public void videoPlayButtonRestartSmailClickLinstener();
+
     }
 
     /**
