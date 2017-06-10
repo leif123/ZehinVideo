@@ -1,5 +1,9 @@
 package com.zehin.videosdk;
 
+import android.util.Log;
+
+import static com.zehin.video.constants.Constants.LOG;
+
 /**
  * Created by wlf on 2017/6/6.
  */
@@ -148,7 +152,7 @@ public class Video {
      */
     public void stopVideo(){
         if(0 != VideoSDK.vPaasSDK_StopPlay()){
-            System.out.println("----------->stopPlayStream fail");
+            Log.e(LOG, "stopPlayStream fail");
         }
     }
 
@@ -158,7 +162,7 @@ public class Video {
     public void logoutVideo(){
         // 0:登录超时; -1:连接中心失败; -2:用户名参数不对; -3:发送函数失败
         int logout = VideoSDK.vPaasSDK_Logout();
-        System.out.println("----------->Logout:"+logout);
+        Log.v(LOG, "vPaasSDK_Logout:"+logout);
     }
 
     // 接口回调

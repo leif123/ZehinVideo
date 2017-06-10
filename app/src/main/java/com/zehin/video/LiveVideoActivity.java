@@ -3,28 +3,35 @@ package com.zehin.video;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.zehin.video.view.VideoLayout;
 import com.zehin.videosdk.Video;
 import com.zehin.videosdk.VideoClickListener;
 
-public class LiveVideoActivity extends Activity implements VideoClickListener{
+import java.util.UUID;
+
+import static com.zehin.video.constants.Constants.LOG;
+
+public class LiveVideoActivity extends Activity implements VideoClickListener, VideoLayout.VideoLayoutClickListener {
 
     // 视频控件
     private VideoLayout videoLayout;
 
+    // 视频
     private Video video = null;
 
+    // 消息处理
     private Handler videoHandler = null;
 
+    //
     private String IP = "218.201.111.234";
-    private String userName = "admin";
+    private String userName = UUID.randomUUID().toString();
     private int camId = 1062043;
 
     @Override
@@ -32,30 +39,25 @@ public class LiveVideoActivity extends Activity implements VideoClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live);
 
+        // 获取视频布局
         videoLayout = (VideoLayout) findViewById(R.id.video);
-        videoLayout.setProgressBarVisibility(View.VISIBLE);
+        videoLayout.setOnVideoLayoutClickListener(this);
+        videoLayout.setVideoPlayStateVisibility(1);
 
+        // 获取视频单例
         video = Video.getInstance();
         video.setOnVideoClickListener(this);
 
+        // 消息处理
         handlerVideoMessage();
 
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                if(video.initVideo()){
-                    video.setVideoParams(IP, IP);
-                    if (video.connetVideo()){
-                        if (video.loginVideo(userName)){
-                            video.playVideo(camId, 0, userName);
-                        }
-                    }
-                }
-            }
-        }.start();
+        // 请求播放视频
+        videoStartPlay();
     }
 
+    /**
+     * 消息处理
+     */
     private void handlerVideoMessage() {
         videoHandler = new Handler(){
             @Override
@@ -64,47 +66,53 @@ public class LiveVideoActivity extends Activity implements VideoClickListener{
                 switch (msg.what){
                     case VIDEO_ERROR_STATE_INIT:
                     case VIDEO_ERROR_STATE_CONNET:
+                        Toast.makeText(LiveVideoActivity.this, "连接服务失败！", Toast.LENGTH_SHORT).show();
                     case VIDEO_ERROR_STATE_LOGIN:
                     case VIDEO_ERROR_STATE_PLAY:
-                        videoLayout.setProgressBarVisibility(View.GONE);
-                        // 添加重播button
+                        Toast.makeText(LiveVideoActivity.this, "连接超时!", Toast.LENGTH_SHORT).show();
+                        videoLayout.setVideoPlayStateVisibility(2);
                         break;
-                    case VIDEO_STATE_NOINIT:
-                        // 恢复未初始化状态
-
+                    case VIDEO_STATE_NOINIT: // 恢复未初始化状态
+                        videoResumeNoInfoState();
                         break;
-                    case VIDEO_STATE_PLAY:
-                        // 开始播放
+                    case VIDEO_STATE_PLAY: // 开始播放
+                        videoLayout.setVideoPlayStateVisibility(0);
+                        break;
+                    default:
                         break;
                 }
             }
         };
     }
 
+    /*
+    ------------------------------------------------------------------------------------------------
+     */
+
     @Override
     public void initVideo(boolean arg0) {
-        System.out.println("------------>initVideo"+arg0);
+        Log.v(LOG, "initVideo:"+arg0);
         if (arg0)
             video.videoState = video.VIDEO_STATE_INIT;
     }
 
     @Override
     public void connetVideo(boolean arg0) {
-        System.out.println("------------>connetVideo"+arg0);
+        Log.v(LOG, "connetVideo:"+arg0);
         if (arg0)
             video.videoState = video.VIDEO_STATE_CONNET;
     }
 
     @Override
     public void loginVideo(boolean arg0) {
-        System.out.println("------------>loginVideo"+arg0);
+        Log.v(LOG, "loginVideo:"+arg0);
         if (arg0)
             video.videoState = video.VIDEO_STATE_LOGIN;
     }
 
     @Override
     public void playVideo(boolean arg0) {
-        System.out.println("------------>playVideo"+arg0);
+        Log.v(LOG, "playVideo:"+arg0);
         if (arg0)
             video.videoState = video.VIDEO_STATE_PLAY;
     }
@@ -123,14 +131,94 @@ public class LiveVideoActivity extends Activity implements VideoClickListener{
 
     @Override
     public void videoErrorListener(int keyError) {
-        System.out.println("------------>keyError"+keyError);
+        Log.e(LOG, "keyError:"+keyError);
         videoHandler.sendEmptyMessage(keyError);
     }
+
+    /*
+    ------------------------------------------------------------------------------------------------
+     */
+
+    @Override
+    public void videoPlayButtonRestartSmailClickLinstener() {
+        Log.d(LOG, "videoPlayButtonRestartSmailClickLinstener");
+        videoLayout.setVideoPlayStateVisibility(3);
+        videoLayout.setVideoPlayStateVisibility(1);
+        videoStartPlay();
+    }
+
+    /*
+    ------------------------------------------------------------------------------------------------
+     */
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         videoHandler.sendEmptyMessage(VIDEO_STATE_NOINIT);
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 请求播放
+     */
+    private void videoStartPlay(){
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                switch (video.videoState){
+                    case VIDEO_STATE_NOINIT:
+                        if(video.initVideo()){
+                            video.setVideoParams(IP, IP);
+                        } else {
+                          break;
+                        }
+                    case VIDEO_STATE_INIT:
+                        if(!video.connetVideo()) {
+                            break;
+                        }
+                    case VIDEO_STATE_CONNET:
+                        userName = UUID.randomUUID().toString();
+                        if(!video.loginVideo(userName)){
+                            break;
+                        }
+                    case VIDEO_STATE_LOGIN:
+                        video.playVideo(camId, 0, userName);
+                        break;
+                }
+            }
+        }.start();
+    }
+
+    /**
+     * 恢复未初始化状态
+     */
+    private void videoResumeNoInfoState(){
+        // 修改状态
+        video.videoState = VIDEO_STATE_NOINIT;
+        // 退出登录
+        switch (video.videoState){
+            case VIDEO_STATE_LOGIN: // 退出登录
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        video.logoutVideo();
+                    }
+                }.start();
+                break;
+            case VIDEO_STATE_PLAY: // 停止播放，退出登录
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        video.stopVideo();
+                        video.logoutVideo();
+                    }
+                }.start();
+                break;
+            default:
+                break;
+        }
     }
 
 
