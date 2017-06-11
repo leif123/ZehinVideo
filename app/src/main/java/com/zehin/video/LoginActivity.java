@@ -31,6 +31,9 @@ public class LoginActivity extends Activity implements View.OnClickListener{
         if (v == button1){
             Intent intent = new Intent(LoginActivity.this,LiveVideoActivity.class);
             startActivity(intent);
+        } else if(v == button2){
+            Intent intent = new Intent(LoginActivity.this,BackPlayVideoActivity.class);
+            startActivity(intent);
         }
     }
 }

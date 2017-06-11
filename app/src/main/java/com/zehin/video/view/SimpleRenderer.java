@@ -6,6 +6,8 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import com.zehin.video.utils.APPScreen;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -14,6 +16,8 @@ import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import static com.zehin.video.constants.Constants.LOG;
 
 public class SimpleRenderer implements Renderer {
 	private int mScreenWidth, mScreenHeight;
@@ -25,13 +29,12 @@ public class SimpleRenderer implements Renderer {
 	private int mVideoWidth;
 	private int mVideoHeight;
 	private ByteBuffer buffer;
-	private DisplayMetrics dm = null;
+	private APPScreen screen = null;
 	
 	public SimpleRenderer(Context content) {
-		Log.d("GLSurfaceViewTest", "surface SimpleRenderer");
-        dm = content.getResources().getDisplayMetrics();
-		mScreenWidth = dm.widthPixels;
-		mScreenHeight = dm.heightPixels;
+		screen = new APPScreen(content);
+		mScreenWidth = screen.getAPPScreenWidth();
+		mScreenHeight = screen.getAPPScreenHeight();
 
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * 2 * 4);
 		byteBuffer.order(ByteOrder.nativeOrder());
@@ -57,7 +60,6 @@ public class SimpleRenderer implements Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-//		Log.d("GLSurfaceViewTest", "surface created");
 		gl.glGenTextures(1, textureIds, 0);
 	}
 
@@ -69,7 +71,6 @@ public class SimpleRenderer implements Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-//		Log.d("GLSurfaceViewTest", "surface onDrawFrame");
 		if (buffer != null) {
 			synchronized (this) {
 				buffer.position(0);
@@ -132,12 +133,12 @@ public class SimpleRenderer implements Renderer {
 				buffer.put(b, 0, b.length);
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("--------->"+e);
+			Log.e(LOG, e.toString());
 		} catch (GLException e) {
-			System.out.println("--------->"+e);
+			Log.e(LOG, e.toString());
 		} catch (Exception e) {
 			// TODO: handle exception
-			System.out.println("--------->"+e);
+			Log.e(LOG, e.toString());
 		}
 	}
 }

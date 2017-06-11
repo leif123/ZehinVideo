@@ -27,7 +27,13 @@
             android:screenOrientation="landscape">
         </activity>
         <activity
-            android:name=".LiveVideoActivity">
+            android:name=".LiveVideoActivity"
+            android:configChanges="orientation|screenSize">
+        </activity>
+        <activity
+            android:name=".BackPlayVideoActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize">
         </activity>
     </application>
 

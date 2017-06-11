@@ -1,6 +1,7 @@
 package com.zehin.video.Application;
 
 import android.app.Application;
+import android.graphics.Rect;
 
 import com.zehin.video.VideoActivity;
 
@@ -10,7 +11,7 @@ import com.zehin.video.VideoActivity;
 
 public class VideoApplication extends Application{
 
-    private VideoApplication mInstance = null;
+    private static VideoApplication mInstance = null;
 
     @Override
     public void onCreate() {
@@ -20,7 +21,7 @@ public class VideoApplication extends Application{
         }
     }
 
-    public VideoApplication getApplication() {
+    public static VideoApplication getApplication() {
         if (mInstance == null) {
             mInstance = new VideoApplication();
         }
