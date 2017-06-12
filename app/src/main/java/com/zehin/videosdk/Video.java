@@ -83,6 +83,7 @@ public class Video {
     public Date startTime; // 开始时间
     public Date endTime; // 结束时间
     public Date nowTime; // 现在时间
+    public Date tempTime = new Date();
 
     /**
      * 初始化

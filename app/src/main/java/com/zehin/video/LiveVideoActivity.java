@@ -213,6 +213,11 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     }
 
+    @Override
+    public void onTouchEventClickLinstener() {
+
+    }
+
     /*
     ------------------------------------------------------------------------------------------------
      */

@@ -294,22 +294,18 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override //  重播button
     public void videoPlayStartClickLinstener() {
-        switch (video.videoState){
-            case Video.VIDEO_STATE_NOINIT:
-            case Video.VIDEO_STATE_INIT:
-            case Video.VIDEO_STATE_CONNET:
-            case Video.VIDEO_STATE_LOGIN:
-                requestStartPlayVideo();
-                break;
-            case Video.VIDEO_STATE_PLAY:
-                break;
-            case Video.VIDEO_STATE_PAUSE:
-                // 恢复播放
-                video.videoState = Video.VIDEO_STATE_PLAY;
-                /*
-
-                 */
-                break;
+        if(video.videoIsPlay){ // 恢复
+            if(video.videoPlayControl(0, 1, camId)){
+                Log.v(LOG, "videoPlayControl:播放true");
+            } else {
+                Log.v(LOG, "videoPlayControl:播放false");
+            }
+            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
+            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
+        } else { // 重播
+            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
+            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
+            requestStartPlayVideo();
         }
     }
 
@@ -334,15 +330,19 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         if(isChecked){ // 恢复播放
             if(video.videoPlayControl(0, 1, camId)){
                 Log.v(LOG, "videoPlayControl:播放true");
-            }else{
+            } else {
                 Log.v(LOG, "videoPlayControl:播放false");
             }
+            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
+            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
         } else {  // 暂停播放
             if(video.videoPlayControl(0, 0, camId)){
                 Log.v(LOG, "videoPlayControl:暂停true");
             }else{
                 Log.v(LOG, "videoPlayControl:暂停false");
             }
+            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON);
+            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
         }
     }
 
@@ -355,6 +355,13 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
             // 请求跳转
             video.videoPlayControl(1,dateUtil.timeToInt(video.nowTime),camId);
         }
+    }
+
+    @Override // 滑动屏幕
+    public void onTouchEventClickLinstener() {
+        video.videoPlayControl(0, 1, camId); // 恢复播放
+        // 请求跳转
+        video.videoPlayControl(1,dateUtil.timeToInt(video.tempTime),camId);
     }
 
 

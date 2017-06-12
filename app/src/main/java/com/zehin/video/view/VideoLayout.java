@@ -35,6 +35,11 @@ import static com.zehin.video.constants.Constants.LOG;
  */
 public class VideoLayout extends RelativeLayout implements View.OnClickListener,SeekBar.OnSeekBarChangeListener {
 
+    // 视频
+    private Video video = null;
+    // 时间
+    private DateUtil dateUtil = new DateUtil();
+
     /**
      * gl布局
      * ---------------------------------------------------------------------------------------------
@@ -178,6 +183,10 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      */
     public VideoLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // 获取视频单例
+        video = Video.getInstance();
+
+
         // 获取布局属性值
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.VideoLayout);
         // 释放
@@ -551,7 +560,10 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         public void videoBottomPlayButtonClickLinstener(boolean isChecked);
 
         // 进度条更新
-        public void onStopTrackingTouch(SeekBar seekBar) ;
+        public void onStopTrackingTouch(SeekBar seekBar);
+
+        // 滑动屏幕
+        public void onTouchEventClickLinstener();
     }
 
     /**
@@ -584,8 +596,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
             listener.videoPlayStartClickLinstener();
         } else if(v == playButton){ // 播放/暂停
-            Log.v(LOG,"playButton:"+Video.getInstance().videoIsPlay);
-            if(Video.getInstance().videoIsPlay){
+            Log.v(LOG,"playButton:"+video.videoIsPlay);
+            if(video.videoIsPlay){
                 playButton.setEnabled(true);//可用
                 listener.videoBottomPlayButtonClickLinstener(playButton.isChecked());
                 if(playButton.isChecked()){ // 恢复播放
@@ -663,19 +675,37 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                                 break;
                         }
                         setShowVideoLayoutState(videoLayoutState);
+                    } else { // 快进/后退
+                        if(video.videoIsPlay){
+                            setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_HIDE);
+                            videoPlayState = VIDEOLAYOUT_CENTER_STATE_HIDE;
+                            playButton.setChecked(true);
+                            listener.onTouchEventClickLinstener();
+                        }
                     }
                     break;
                 case MotionEvent.ACTION_MOVE:
                     moveX = event.getX()-startX;
                     if(Math.abs(moveX)>20){
-                        if(Video.getInstance().videoIsPlay){
+                        if(video.videoIsPlay){
                             setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_FOWARDBUTTON);
                             videoPlayState = VIDEOLAYOUT_CENTER_STATE_FOWARDBUTTON;
                             if(moveX > 20){
                                 fowardImage.setImageResource(android.R.drawable.ic_media_ff);
+                                if(video.nowTime.getTime()+(int)moveX*1000 < video.endTime.getTime()){ // 快进
+                                    video.tempTime.setTime(video.nowTime.getTime()+(int)moveX*1000);
+                                } else { // 终点
+                                    video.tempTime.setTime(video.endTime.getTime());
+                                }
                             } else {
                                 fowardImage.setImageResource(android.R.drawable.ic_media_rew);
+                                if(video.nowTime.getTime()+(int)moveX*1000 > video.startTime.getTime()){// 后退
+                                    video.tempTime.setTime(video.nowTime.getTime()+(int)moveX*1000);
+                                } else { // 起始点
+                                    video.tempTime.setTime(video.startTime.getTime());
+                                }
                             }
+                            playTime.setText(dateUtil.getStringDate(video.tempTime,DateUtil.DATE_FORMAT_HMS)+"/"+dateUtil.getStringDate(video.endTime,DateUtil.DATE_FORMAT_HMS));
                         }
                     }
             }
