@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zehin.video.R;
+import com.zehin.video.utils.DateUtil;
 
 /**
  *	日期		:	2016-1-16<br>
@@ -23,6 +24,8 @@ public class ListAdapter_Video extends BaseAdapter {
 	
 	private Context context;
 	private List<VideoPlayRecord> data;
+
+	private DateUtil dateUtil = new DateUtil();
 
 	public ListAdapter_Video(Context context, List<VideoPlayRecord> data) {
 		super();
@@ -66,8 +69,8 @@ public class ListAdapter_Video extends BaseAdapter {
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
-//		holder.tv_time.setText(DateUtil.dateToString(data.get(position).getStartTime(),1)+"~"
-//				+DateUtil.dateToString(data.get(position).getStopTime(),1));
+		holder.tv_time.setText(dateUtil.getStringDate(data.get(position).getStartTime(),"HH:mm:ss")+"~"
+				+dateUtil.getStringDate(data.get(position).getStopTime(),"HH:mm:ss"));
 		if("1".equals(data.get(position).getStatus())){ 
 			holder.tv_time.setTextColor(Color.parseColor("#B300C6FF"));
 			holder.iv_video.setImageResource(R.drawable.video_play_list_open);

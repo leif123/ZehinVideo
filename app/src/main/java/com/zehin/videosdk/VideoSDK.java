@@ -1,7 +1,5 @@
 package com.zehin.videosdk;
 
-import com.zehin.video.VideoActivity;
-
 public class VideoSDK {
 	
 	static {  
@@ -163,7 +161,7 @@ public class VideoSDK {
      * @param second
      */
     public static void vPaasSDK_PlayBackTime(int year, int month, int day, int hour, int minute, int second){
-//        ActivityMenu4_Detail1_PlayBack.upDataTime(hour,minute,second);
+        Video.getInstance().upDateTime(hour,minute,second);
     }
 
     /**
@@ -182,6 +180,6 @@ public class VideoSDK {
      * @param iStopTime 结束时间
      */
     public static void vPaasSDK_VideoPlayRecord(int iCamID,int iDate, int iResultSize, int[] iStartTime, int[] iStopTime){
-//    	VideoActivity.videoPlayRecord(iCamID,iDate,iResultSize,iStartTime,iStopTime);
+        Video.getInstance().videoPlayRecord(iCamID,iDate,iResultSize,iStartTime,iStopTime);
     }
 }

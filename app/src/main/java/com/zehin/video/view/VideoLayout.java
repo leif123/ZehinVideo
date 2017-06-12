@@ -224,7 +224,6 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         videoPlayFoward.setPadding(20,20,20,20);
         videoPlayFoward.setGravity(Gravity.CENTER);
         videoPlayFoward.setOrientation(LinearLayout.VERTICAL);
-        videoPlayFoward.setVisibility(View.GONE);
         LayoutParams videoPlayFowardParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         videoPlayFowardParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         LinearLayout center = new LinearLayout(context);
@@ -235,6 +234,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         addView(center,centerParams);
         videoPlayFowardParams.addRule(RelativeLayout.ABOVE,center.getId());
         addView(videoPlayFoward,videoPlayFowardParams);
+        videoPlayFoward.setVisibility(View.GONE);
         // 添加快进image
         fowardImage = new ImageView(context);
         fowardImage.setImageResource(android.R.drawable.ic_media_ff);
@@ -290,10 +290,11 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         playButton.setChecked(false);
         playButton.setButtonDrawable(null);
         playButton.setBackgroundResource(R.drawable.video_play_button);
-        playButton.setEnabled(false);//不开用
+        playButton.setOnClickListener(this);
         playButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         playButtonParams.setMargins(20,0,18,0);
         fullScreenBottomBarLayout.addView(playButton,playButtonParams);
+        playButton.setOnClickListener(this);
         // 添加进度条
         seekBar = new SeekBar(context);
         seekBarParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -486,12 +487,14 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 videoPlayButton.setVisibility(View.VISIBLE);
                 videoPlayButton.startAnimation(animationPlayButtonRestart);
                 Log.v(LOG, "videoPlayButtonSmail3");
+                break;
             case VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON:
                 animationPlayButtonRestart.setFillBefore(true);
                 animationPlayButtonRestart.setFillAfter(false);
                 videoPlayButton.setImageResource(R.drawable.video_stop_big_button);
                 videoPlayButton.setVisibility(View.VISIBLE);
                 Log.v(LOG, "videoPlayButtonSmail4");
+                break;
             case VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON:
                 animationPlayButtonRestart.setFillAfter(true);
                 animationPlayButtonRestart.setFillBefore(false);
@@ -499,8 +502,10 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 videoPlayButton.setVisibility(View.VISIBLE);
                 videoPlayButton.startAnimation(animationPlayButtonRestart);
                 Log.v(LOG, "videoPlayButtonSmail5");
+                break;
             case VIDEOLAYOUT_CENTER_STATE_FOWARDBUTTON:
                 videoPlayFoward.setVisibility(View.VISIBLE);
+                break;
             default:
                 break;
         }
@@ -532,15 +537,21 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      * Video listener 接口
      */
     public interface VideoLayoutClickListener{
-        // 小屏 重播button
+        //  重播button
         public void videoPlayStartClickLinstener();
-        // 小屏 全屏button
+        //  全屏button
         public void videoPlayFullScreenClickLinstener();
 
         // 全屏 退出button
         public void videoPlayExitClickLinstener();
         // 全屏 日历button
         public void videoPlayDateClickLinstener();
+
+        // 全屏 下边栏playButton
+        public void videoBottomPlayButtonClickLinstener(boolean isChecked);
+
+        // 进度条更新
+        public void onStopTrackingTouch(SeekBar seekBar) ;
     }
 
     /**
@@ -559,17 +570,33 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     @Override
     public void onClick(View v) {
         if(v == videoPlayButton){ // 重播
-            switch (videoLayoutType){
-                case VIDEOLAYOUT_PLAY_TYPE_LIVE:
+            switch (videoPlayState){
+                case VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON:
                     setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_SMAILSTARTBUTTON);
                     break;
-                case VIDEOLAYOUT_PLAY_TYPE_PLAYBACK:
+                case VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON:
                     setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
                     break;
+                default:
+                    return;
             }
             setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
             videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
             listener.videoPlayStartClickLinstener();
+        } else if(v == playButton){ // 播放/暂停
+            Log.v(LOG,"playButton:"+Video.getInstance().videoIsPlay);
+            if(Video.getInstance().videoIsPlay){
+                playButton.setEnabled(true);//可用
+                listener.videoBottomPlayButtonClickLinstener(playButton.isChecked());
+                if(playButton.isChecked()){ // 恢复播放
+                    playButton.setChecked(true);
+                } else { // 暂停播放
+                    playButton.setChecked(false);
+                }
+            } else {
+                playButton.setChecked(false);
+                playButton.setEnabled(false);//不可用
+            }
         } else if(v == smallScreenFullButton){ // 全屏
             listener.videoPlayFullScreenClickLinstener();
         } else if(v == fullScreenBackButton){ // 退出
@@ -604,6 +631,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+        listener.onStopTrackingTouch(seekBar);
     }
 
     /**
@@ -736,6 +764,26 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         dateText.setText(date);
     }
 
+    /**
+     * 设置进度条的值
+     * @param value 范围0-100
+     */
+    public void setVideoLayoutSeekBar(int value){
+        seekBar.setProgress(value);
+    }
+
+    /**
+     * 设置下边栏播放时间
+     * @param time
+     */
+    public void setVideoLayoutTime(String time){
+        playTime.setText(time);
+    }
+
+    /**
+     * 获取视频列表布局
+     * @return
+     */
     public ListView getVideoLayoutListView(){
         return listView;
     }

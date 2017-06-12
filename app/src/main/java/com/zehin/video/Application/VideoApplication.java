@@ -1,9 +1,6 @@
 package com.zehin.video.Application;
 
 import android.app.Application;
-import android.graphics.Rect;
-
-import com.zehin.video.VideoActivity;
 
 /**
  * Created by wlf on 2017/6/6.

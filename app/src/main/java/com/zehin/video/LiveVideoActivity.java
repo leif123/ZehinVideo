@@ -9,13 +9,17 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.zehin.video.utils.APPScreen;
 import com.zehin.video.view.VideoLayout;
 import com.zehin.videosdk.Video;
 import com.zehin.videosdk.VideoClickListener;
+import com.zehin.videosdk.VideoPlayRecord;
 
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static com.zehin.video.constants.Constants.LOG;
@@ -37,6 +41,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
     private String IP = "218.201.111.234";
     private String userName = UUID.randomUUID().toString();
     private int camId = 1062043;
+    private int streamType = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +57,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         handlerVideoMessage();
 
         // 请求播放视频
-        videoStartPlay();
+        requestStartPlayVideo();
 
         screen = new APPScreen(this);
     }
@@ -137,6 +142,11 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
     }
 
     @Override
+    public void videoPlayRecord(List<VideoPlayRecord> list) {
+
+    }
+
+    @Override
     public void videoMessageData(int width, int height, byte[] data) {
         if(video.videoState == Video.VIDEO_STATE_PLAY){ // 播放状态
             videoLayout.upDateRenderer(width,height,data);
@@ -146,6 +156,11 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
                 videoHandler.sendEmptyMessage(Video.VIDEO_STATE_PLAY);
             }
         }
+    }
+
+    @Override
+    public void videoUpDateTime(Date date) {
+
     }
 
     @Override
@@ -161,8 +176,8 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     @Override
     public void videoPlayStartClickLinstener() {
-        Log.d(LOG, "videoPlayButtonRestartSmailClickLinstener");
-        videoStartPlay();
+        Log.d(LOG, "videoPlayStartClickLinstener");
+        requestStartPlayVideo();
     }
 
     @Override
@@ -188,6 +203,16 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     }
 
+    @Override
+    public void videoBottomPlayButtonClickLinstener(boolean isChecked) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
     /*
     ------------------------------------------------------------------------------------------------
      */
@@ -208,7 +233,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
     /**
      * 请求播放
      */
-    private void videoStartPlay(){
+    private void requestStartPlayVideo(){
         new Thread(){
             @Override
             public void run() {
@@ -230,7 +255,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
                             break;
                         }
                     case Video.VIDEO_STATE_LOGIN:
-                        video.playVideo(camId, 0, userName);
+                        video.playVideo(camId, streamType, userName, 1, 0, 0);
                         break;
                 }
             }
@@ -241,8 +266,6 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
      * 恢复未初始化状态
      */
     private void videoResumeNoInfoState(){
-        // 修改状态
-        video.videoState = Video.VIDEO_STATE_NOINIT;
         // 退出登录
         switch (video.videoState){
             case Video.VIDEO_STATE_LOGIN: // 退出登录
@@ -267,5 +290,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
             default:
                 break;
         }
+        // 修改状态
+        video.videoState = Video.VIDEO_STATE_NOINIT;
     }
 }
