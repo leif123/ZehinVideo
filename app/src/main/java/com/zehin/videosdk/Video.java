@@ -242,7 +242,7 @@ public class Video {
      * @param second
      */
     public void upDateTime(int hour, int minute, int second){
-        if(VideoLayout.videoLayoutType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
+        if(VideoLayout.videoPlayType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
             Log.v(LOG, "回放时间");
             if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
                 nowTime = dateUtil.intToDate(nowTime,hour,minute,second);

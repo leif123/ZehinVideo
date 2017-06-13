@@ -103,7 +103,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         videoLayout = (VideoLayout) findViewById(R.id.video);
         videoLayout.setOnVideoLayoutClickListener(this);
         // 播放类型-回放
-        videoLayout.setInitVideoLayoutType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK);
+        videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK);
 
         // 获取listView
         data = new ArrayList<VideoPlayRecord>();

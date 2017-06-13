@@ -72,7 +72,13 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         videoLayout = (VideoLayout) findViewById(R.id.video);
         videoLayout.setOnVideoLayoutClickListener(this);
         // 播放类型-直播
-        videoLayout.setInitVideoLayoutType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE);
+        videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE);
+        // 设置参数
+
+        // 请求登录
+        videoLayout.loginVideo();
+        // 开始播放
+        videoLayout.startPlayVideo();
     }
 
     /**
