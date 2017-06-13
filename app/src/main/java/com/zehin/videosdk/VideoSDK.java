@@ -165,10 +165,11 @@ public class VideoSDK {
     }
 
     /**
-     * 播放是否成功
+     * 播放失败返回
+     * @param type  0:连接超时 1：云终端不在线  2：镜头不在线
      */
-    public static void vPaasSDK_PlayFailed(){
-        Video.getInstance().playVideoFailed();
+    public static void vPaasSDK_PlayFailed(int type){
+        Video.getInstance().playVideoFailed(type);
     }
     
     /**

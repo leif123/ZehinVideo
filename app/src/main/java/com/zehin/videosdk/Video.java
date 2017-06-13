@@ -3,6 +3,7 @@ package com.zehin.videosdk;
 import android.util.Log;
 
 import com.zehin.video.utils.DateUtil;
+import com.zehin.video.view.VideoLayout;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,8 +56,10 @@ public class Video {
      * 20003：登录
      * 20004：播放
      * 20005：暂停
-     * 20006: 查询
+     * 20006: 查询命令错误
      * 20007：跳转
+     * 20008：查询云终端不在线
+     * 20009：查询镜头不在线
      */
     public static final int VIDEO_ERROR_STATE_INIT = 20001;
     public static final int VIDEO_ERROR_STATE_CONNET = 20002;
@@ -65,6 +68,8 @@ public class Video {
     public static final int VIDEO_ERROR_STATE_PAUSE = 20005;
     public static final int VIDEO_ERROR_STATE_QUERY = 20006;
     public static final int VIDEO_ERROR_STATE_SEEK = 20007;
+    public static final int VIDEO_ERROR_STATE_SEARCH1 = 20008;
+    public static final int VIDEO_ERROR_STATE_SEARCH2 = 20009;
 
 
     /**
@@ -171,10 +176,21 @@ public class Video {
     }
 
     /**
-     * 请求播放失败
+     * 播放失败返回
+     * @param type 0:连接超时 1：云终端不在线  2：镜头不在线
      */
-    public void playVideoFailed(){
-        listener.videoErrorListener(VIDEO_ERROR_STATE_PLAY);
+    public void playVideoFailed(int type){
+        switch (type){
+            case 0:
+                listener.videoErrorListener(VIDEO_ERROR_STATE_PLAY);
+                break;
+            case 1:
+                listener.videoErrorListener(VIDEO_ERROR_STATE_SEARCH1);
+                break;
+            case 2:
+                listener.videoErrorListener(VIDEO_ERROR_STATE_SEARCH2);
+                break;
+        }
     }
 
     /**
@@ -226,9 +242,17 @@ public class Video {
      * @param second
      */
     public void upDateTime(int hour, int minute, int second){
-        if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
-            nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
-            listener.videoUpDateTime(nowTime);
+        if(VideoLayout.videoLayoutType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
+            Log.v(LOG, "回放时间");
+            if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
+                nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
+                listener.videoUpDateTime(nowTime);
+            } else{
+                Log.v(LOG, "时间差不小于10分钟");
+                Log.v(LOG, nowTime.toString());
+                Log.v(LOG, dateUtil.intToDate(nowTime,hour,minute,second).toString());
+
+            }
         }
     }
 
@@ -240,6 +264,7 @@ public class Video {
      */
     public boolean videoPlayControl(int type, int content, int camId){
         if(VideoSDK.vPaasSDK_BackStreamControl(type,content,camId,0)){
+            Log.v(LOG, "type:"+type+"content:"+content+"camId:"+camId);
             return true;
         }
         if(type == 0){

@@ -136,7 +136,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     private LayoutParams fullScreenBottomBarLayoutParams;
 
     // 全屏下边栏播放暂停button
-    private CheckBox playButton;
+    public CheckBox playButton;
     // 全屏下边栏播放暂停button属性
     private LinearLayout.LayoutParams playButtonParams;
 
@@ -251,7 +251,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         videoPlayFoward.addView(fowardImage,fowardImageParams);
         // 添加快进Text
         TextView fowardText = new TextView(context);
-        fowardText.setText("00:00:00/12:00:00");
+        fowardText.setText("00:00:00/00:00:00");
         fowardText.setTextColor(Color.parseColor("#ffffff"));
         fowardText.setTextSize(16);
         LinearLayout.LayoutParams fowardTextParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -592,8 +592,12 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 default:
                     return;
             }
-            setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
-            videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
+            if(video.videoIsPlay){
+                playButton.setChecked(true);
+            } else {
+                setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
+                videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
+            }
             listener.videoPlayStartClickLinstener();
         } else if(v == playButton){ // 播放/暂停
             Log.v(LOG,"playButton:"+video.videoIsPlay);

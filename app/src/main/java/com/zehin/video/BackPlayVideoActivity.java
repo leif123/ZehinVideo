@@ -52,8 +52,14 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     //
     private String IP = "218.201.111.234";
+//    private String IP = "123.234.227.107";
+//    private String IP = "192.168.3.158";
     private String userName = UUID.randomUUID().toString();
     private int camId = 1062043;
+//    private int camId = 5126; // 交通公司
+//    private int camId = 13558;
+//    private int camId = 1062091;
+//    private int camId = 1061419;
     private int streamType = 0;
 
     // 时间
@@ -154,6 +160,15 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                     case Video.VIDEO_ERROR_STATE_QUERY:
                         Toast.makeText(BackPlayVideoActivity.this, "获取视频列表失败!", Toast.LENGTH_SHORT).show();
                         videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+                        break;
+                    case Video.VIDEO_ERROR_STATE_SEARCH1: // 云终端不在线
+                        Toast.makeText(BackPlayVideoActivity.this, "云终端不在线!", Toast.LENGTH_SHORT).show();
+                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+                        break;
+                    case Video.VIDEO_ERROR_STATE_SEARCH2: // 镜头不在线
+                        Toast.makeText(BackPlayVideoActivity.this, "镜头不在线!", Toast.LENGTH_SHORT).show();
+                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+                        break;
                     case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
                         Log.v(LOG,"handlerVideoMessage恢复未初始化状态!");
                         videoResumeNoInfoState();
@@ -162,6 +177,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                         adapter.notifyDataSetChanged(); //刷新布局
                         if(data.size() == 0){ // 没有数据
                             Toast.makeText(BackPlayVideoActivity.this, "未查询到视频记录!", Toast.LENGTH_SHORT).show();
+                            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
                         } else {
                             // 修改布局
                             switch (videoLayout.videoLayoutState){
@@ -184,12 +200,12 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                             // 播放第一条视频记录
                             playSelectVideo(0);
                         }
-                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
                         break;
                     case Video.VIDEO_STATE_PLAY: // 开始播放
                         Log.v(LOG,"handlerVideoMessage开始播放!");
                         videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
                         videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
+                        videoLayout.playButton.setChecked(true);
                         break;
                     case VIDEO_CHANGE_TIME: // 更新时间
                         videoLayout.setVideoLayoutTime(dateUtil.getStringDate(video.nowTime,DateUtil.DATE_FORMAT_HMS)+"/"+dateUtil.getStringDate(video.endTime,DateUtil.DATE_FORMAT_HMS));
@@ -253,14 +269,14 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
             video.videoState = Video.VIDEO_STATE_PLAY;
     }
 
-    @Override
+    @Override // 返回视频记录列表
     public void videoPlayRecord(List<VideoPlayRecord> list) {
         data.clear();
         data.addAll(list);
         videoHandler.sendEmptyMessage(Video.VIDEO_STATE_SEARCH);
     }
 
-    @Override
+    @Override // 收到播放流
     public void videoMessageData(int width, int height, byte[] data) {
         if(video.videoState == Video.VIDEO_STATE_PLAY){ // 播放状态
             videoLayout.upDateRenderer(width,height,data);
@@ -443,10 +459,13 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
      */
     private void playSelectVideo(int index) {
         video.videoIsPlay = false;
-        if(data.size()>0 && data.size() < index+2){
+        if(data.size()>0){
             video.startTime = data.get(index).getStartTime();
             video.endTime = data.get(index).getStopTime();
             video.nowTime = data.get(index).getStartTime();
+            Log.v(LOG,"startTime"+video.startTime);
+            Log.v(LOG,"endTime"+video.endTime);
+            Log.v(LOG,"nowTime"+video.nowTime);
             new Thread(){
                 public void run() {
 					if(video.videoIsPlay){ // 视频跳转
@@ -475,6 +494,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
             }.start();
         }else{
             Toast.makeText(BackPlayVideoActivity.this, "未查询到视频记录", Toast.LENGTH_SHORT).show();
+            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
         }
     }
 

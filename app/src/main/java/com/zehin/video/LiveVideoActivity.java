@@ -39,8 +39,10 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     //
     private String IP = "218.201.111.234";
+//    private String IP = "192.168.3.158";
     private String userName = UUID.randomUUID().toString();
     private int camId = 1062043;
+//    private int camId = 1062091;
     private int streamType = 0;
 
     @Override
@@ -297,5 +299,6 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         }
         // 修改状态
         video.videoState = Video.VIDEO_STATE_NOINIT;
+        video.videoIsPlay = false;
     }
 }
