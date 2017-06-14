@@ -73,7 +73,7 @@ public class Video {
 
 
     /**
-     * 当前状态
+     * 当前视频状态
      */
     public int videoState = VIDEO_STATE_NOINIT;
 
@@ -242,18 +242,18 @@ public class Video {
      * @param second
      */
     public void upDateTime(int hour, int minute, int second){
-        if(VideoLayout.videoPlayType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
-            Log.v(LOG, "回放时间");
-            if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
-                nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
-                listener.videoUpDateTime(nowTime);
-            } else{
-                Log.v(LOG, "时间差不小于10分钟");
-                Log.v(LOG, nowTime.toString());
-                Log.v(LOG, dateUtil.intToDate(nowTime,hour,minute,second).toString());
-
-            }
-        }
+//        if(VideoLayout.videoPlayType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
+//            Log.v(LOG, "回放时间");
+//            if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
+//                nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
+//                listener.videoUpDateTime(nowTime);
+//            } else{
+//                Log.v(LOG, "时间差不小于10分钟");
+//                Log.v(LOG, nowTime.toString());
+//                Log.v(LOG, dateUtil.intToDate(nowTime,hour,minute,second).toString());
+//
+//            }
+//        }
     }
 
     /**

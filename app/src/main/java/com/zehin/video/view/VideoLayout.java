@@ -1,9 +1,12 @@
 package com.zehin.video.view;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.opengl.GLSurfaceView;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -13,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -20,10 +24,14 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.zehin.video.BackPlayVideoActivity;
+import com.zehin.video.LiveVideoActivity;
 import com.zehin.video.R;
 import com.zehin.video.utils.DateUtil;
 import com.zehin.videosdk.Video;
+import com.zehin.videosdk.VideoSDK;
 
 import java.util.Date;
 import java.util.UUID;
@@ -36,14 +44,35 @@ import static com.zehin.video.constants.Constants.LOG;
  */
 public class VideoLayout extends RelativeLayout implements View.OnClickListener,SeekBar.OnSeekBarChangeListener {
 
-    // 视频播放类型
+    /**
+     * 视频播放类型
+     */
     public int videoPlayType;
+    /**
+     * 当前视频状态
+     */
+    public int videoState;
 
     // 视频
     private Video video = null;
 
     // 时间
     private DateUtil dateUtil = new DateUtil();
+    private int mYear;
+    private int mMonth;
+    private int mDay;
+
+    private String centerIP = ""; // 中心IP
+    private String stunIP = ""; // 打洞IP
+    private int camId = 0; // 镜头ID
+    private int streamType = 0; // 码流类型
+    private String userName = "";
+
+    // 消息处理
+    private Handler videoHandler = null;
+
+    // 上下文
+    private Context context;
 
     /**
      * 构造方法
@@ -52,6 +81,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      */
     public VideoLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.context = context;
+
         // 获取视频单例
         video = Video.getInstance();
 
@@ -62,48 +93,178 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
 
         // 初始化布局
         initLayout(context);
-
-        // gl初始化
-        initGLSurfaceView(context);
-        // 显示菊花转
-        progressBar.setVisibility(View.VISIBLE);
-        // 添加播放暂停button布局
-        playButtonBig.setVisibility(View.GONE);
-        // 播放/暂停 button
-        playButton.setChecked(false); // 暂停
-
-        // 点击播放动画
-        animationPlayButtonRestart = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_restart);
-        // 下边栏动画
-        animationVideoLayoutBottomBarOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_layout_bottombar_open);
-        animationVideoLayoutBottomBarClose = (Animation) AnimationUtils.loadAnimation(context,R.anim.animation_video_layout_bottombar_close);
-        // 上边栏动画
-        animationVideoLayoutTopBarOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_layout_topbar_open);
-        animationVideoLayoutTopBarClose = (Animation) AnimationUtils.loadAnimation(context,R.anim.animation_video_layout_topbar_close);
-        // 视频列表动画
-        animationVideoPlayDataListOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_datalist_open);
-        animationVideoPlayDataListClose = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_datalist_close);
-
-
-        // 快进布局
-        videoPlayFoward.setVisibility(View.GONE);
-        // 快进时间
-        fowardText.setText("00:00:00/00:00:00");
-        // 小屏 下边栏 布局
-        smallScreenBottomBarLayout.setVisibility(View.GONE);
-        // 全屏 下边栏 布局
-        fullScreenBottomBarLayout.setVisibility(View.GONE);
-        // 全屏 上边栏 布局
-        fullScreenTopBarLayout.setVisibility(View.GONE);
-        // 视频列表
-        videoPlayListLayout.setVisibility(View.GONE);
-
-        // 播放时间
-        playTime.setText("00:00:00/00:00:00");
-        // 日历时间
-        dateText.setText(new DateUtil().getStringDate(new Date(),"yyyy-MM-dd"));
-
+        // 初始化参数
+        initParams(context);
     }
+
+    /**
+     * 点击事件监听
+     * ---------------------------------------------------------------------------------------------
+     */
+    @Override
+    public void onClick(View v) {
+        if(v == playButtonBig){ // 重播/恢复播放
+            if(videoPlayState == VIDEO_STATE_PAUSE){ // 恢复播放
+
+            } else { // 重播
+                if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+                    // 动画
+                    animationPlayButtonRestart.setFillAfter(true);
+                    animationPlayButtonRestart.setFillBefore(false);
+                    playButtonBig.setImageResource(R.drawable.video_start_button);
+                    playButtonBig.setVisibility(View.VISIBLE);
+                    playButtonBig.startAnimation(animationPlayButtonRestart);
+                } else if (videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK) { // 回放
+                    animationPlayButtonRestart.setFillAfter(true);
+                    animationPlayButtonRestart.setFillBefore(false);
+                    playButtonBig.setImageResource(R.drawable.video_start_big_button);
+                    playButtonBig.setVisibility(View.VISIBLE);
+                    playButtonBig.startAnimation(animationPlayButtonRestart);
+                }
+                // 加载
+                progressBar.setVisibility(View.VISIBLE);
+                // 请求播放
+                startPlayVideo();
+            }
+            switch (videoPlayState){
+                case VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON:
+                    setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_SMAILSTARTBUTTON);
+                    break;
+                case VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON:
+                    setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
+                    break;
+                default:
+                    return;
+            }
+            if(video.videoIsPlay){
+                playButton.setChecked(true);
+            } else {
+                setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
+                videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
+            }
+            listener.videoPlayStartClickLinstener();
+        } else if(v == playButton){ // 播放/暂停
+            Log.v(LOG,"playButton:"+video.videoIsPlay);
+            if(video.videoIsPlay){
+                playButton.setEnabled(true);//可用
+                listener.videoBottomPlayButtonClickLinstener(playButton.isChecked());
+                if(playButton.isChecked()){ // 恢复播放
+                    playButton.setChecked(true);
+                } else { // 暂停播放
+                    playButton.setChecked(false);
+                }
+            } else {
+                playButton.setChecked(false);
+                playButton.setEnabled(false);//不可用
+            }
+        } else if(v == smallScreenFullButton){ // 全屏
+            listener.videoPlayFullScreenClickLinstener();
+        } else if(v == fullScreenBackButton){ // 退出
+            listener.videoPlayExitClickLinstener();
+        } else if(v == fullScreenDateButton){ // 日历
+            listener.videoPlayDateClickLinstener();
+        } else if(v == fullScreenMoreButton){ // 更多
+            switch (videoLayoutState){
+                case VIDEOLAYOUT_STATE_HEAD_AND_TAIL:
+                case VIDEOLAYOUT_STATE_VIDEOLIST_HIDE:
+                    videoLayoutState = VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
+                    break;
+                case VIDEOLAYOUT_STATE_VIDEOLIST_SHOW:
+                    videoLayoutState = VIDEOLAYOUT_STATE_VIDEOLIST_HIDE;
+                    break;
+            }
+            setShowVideoLayoutState(videoLayoutState);
+        }
+    }
+
+    /**
+     * 消息处理
+     * ---------------------------------------------------------------------------------------------
+     */
+    private void handlerVideoMessage() {
+        videoHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case VIDEO_ERROR_STATE_INIT:
+                        Toast.makeText(context, "初始化失败！", Toast.LENGTH_SHORT).show();
+                        // progressBar隐藏
+                        progressBar.setVisibility(View.GONE);
+                        // 显示重播按钮
+                        if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+                            playButtonBig.setImageResource(R.drawable.video_stop_button);
+                        } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
+                            playButtonBig.setImageResource(R.drawable.video_stop_big_button);
+                        }
+                        animationPlayButtonRestart.setFillBefore(true);
+                        animationPlayButtonRestart.setFillAfter(false);
+                        playButtonBig.setVisibility(View.VISIBLE);
+                        break;
+                    case Video.VIDEO_ERROR_STATE_CONNET:
+                        Toast.makeText(context, "连接服务失败！", Toast.LENGTH_SHORT).show();
+                        // progressBar隐藏
+                        progressBar.setVisibility(View.GONE);
+                        // 显示重播按钮
+                        if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+                            playButtonBig.setImageResource(R.drawable.video_stop_button);
+                        } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
+                            playButtonBig.setImageResource(R.drawable.video_stop_big_button);
+                        }
+                        animationPlayButtonRestart.setFillBefore(true);
+                        animationPlayButtonRestart.setFillAfter(false);
+                        playButtonBig.setVisibility(View.VISIBLE);
+                        break;
+                    case Video.VIDEO_ERROR_STATE_LOGIN:
+                    case Video.VIDEO_ERROR_STATE_PLAY:
+                        Toast.makeText(context, "连接超时!", Toast.LENGTH_SHORT).show();
+                        // progressBar隐藏
+                        progressBar.setVisibility(View.GONE);
+                        // 显示重播按钮
+                        if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+                            playButtonBig.setImageResource(R.drawable.video_stop_button);
+                        } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
+                            playButtonBig.setImageResource(R.drawable.video_stop_big_button);
+                        }
+                        animationPlayButtonRestart.setFillBefore(true);
+                        animationPlayButtonRestart.setFillAfter(false);
+                        playButtonBig.setVisibility(View.VISIBLE);
+                        break;
+                    case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
+//                        videoResumeNoInfoState();
+                        break;
+                    case Video.VIDEO_STATE_PLAY: // 开始播放
+//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+    }
+
+    /**
+     * 播放错误：
+     * 20001：初始化
+     * 20002：连接
+     * 20003：登录
+     * 20004：播放
+     * 20005：暂停
+     * 20006: 查询命令错误
+     * 20007：跳转
+     * 20008：查询云终端不在线
+     * 20009：查询镜头不在线
+     */
+    public static final int VIDEO_ERROR_STATE_INIT = 20001;
+    public static final int VIDEO_ERROR_STATE_CONNET = 20002;
+    public static final int VIDEO_ERROR_STATE_LOGIN = 20003;
+    public static final int VIDEO_ERROR_STATE_PLAY = 20004;
+    public static final int VIDEO_ERROR_STATE_PAUSE = 20005;
+    public static final int VIDEO_ERROR_STATE_QUERY = 20006;
+    public static final int VIDEO_ERROR_STATE_SEEK = 20007;
+    public static final int VIDEO_ERROR_STATE_SEARCH1 = 20008;
+    public static final int VIDEO_ERROR_STATE_SEARCH2 = 20009;
 
     /**
      * 方法定义
@@ -116,49 +277,104 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      */
     public void setVideoPlayType(int type){
         videoPlayType = type;
+        // 加载布局
+        switch (type){
+            case VIDEOLAYOUT_PLAY_TYPE_LIVE: // 直播
+                // ProgressBar控件
+                progressBar.setVisibility(View.VISIBLE);
+                break;
+            case VIDEOLAYOUT_PLAY_TYPE_PLAYBACK: // 回放
+                // 全屏 上边栏 布局
+                fullScreenTopBarLayout.setVisibility(View.VISIBLE);
+                // 全屏 下边栏 布局
+                fullScreenBottomBarLayout.setVisibility(View.VISIBLE);
+                // 显示日历
+                new DatePickerDialog(context, setDateListener, mYear, mMonth, mDay).show();
+                break;
+        }
     }
 
-    public void loginVideo(){
+    /**
+     * 日历回调监听
+     */
+    private DatePickerDialog.OnDateSetListener setDateListener = new DatePickerDialog.OnDateSetListener() {
+
+        public void onDateSet(DatePicker view, int year, int monthOfYear,
+                              int dayOfMonth) {
+            mYear = year;
+            mMonth = monthOfYear;
+            mDay = dayOfMonth;
+            // 修改日期
+            dateText.setText(dateUtil.getStringDate(dateUtil.getIntToDate(mYear,mMonth+1,mDay),"yyyy-MM-dd"));
+            // 修改布局
+            progressBar.setVisibility(View.VISIBLE);
+            // 请求播放
+            startPlayVideo();
+        }
+    };
+
+    /**
+     * 设置参数
+     * @param stunIP
+     * @param centerIP
+     * @param camId
+     */
+    public void setVideoPlayParams(String stunIP, String centerIP, int camId, int streamType){
+        this.stunIP = stunIP;
+        this.centerIP = centerIP;
+        this.camId = camId;
+        this.streamType = streamType;
+    }
+
+    /**
+     * 请求播放
+     */
+    public void startPlayVideo(){
         new Thread(){
             @Override
             public void run() {
                 super.run();
-                switch (video.videoState){
-                    case Video.VIDEO_STATE_NOINIT:
-                        if(video.initVideo()){
-                            video.setVideoParams(IP, IP);
+                switch (videoState){
+                    case VIDEO_STATE_NOINIT:
+                        if(VideoSDK.vPaasSDK_Init()){
+                            VideoSDK.vPaasSDK_SetStunIP(stunIP);
+                            VideoSDK.vPaasSDK_SetCenterIP(centerIP);
+                            VideoSDK.vPaasSDK_SetCenterCmdPort(10000);
+                            VideoSDK.vPaasSDK_SetCenterHeartPort(20000);
+                            VideoSDK.vPaasSDK_SetCmdCallBack();
+                            videoState = VIDEO_STATE_INIT;
                         } else {
+                            videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_INIT);
                             break;
                         }
-                    case Video.VIDEO_STATE_INIT:
-                        if(!video.connetVideo()) {
+                    case VIDEO_STATE_INIT:
+                        if(VideoSDK.vPaasSDK_ConnetStunSer()) {
+                            videoState = VIDEO_STATE_CONNET;
+                        } else {
+                            videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_CONNET);
                             break;
                         }
-                    case Video.VIDEO_STATE_CONNET:
+                    case VIDEO_STATE_CONNET:
                         userName = UUID.randomUUID().toString();
-                        if(!video.loginVideo(userName)){
+                        if(1000 == VideoSDK.vPaasSDK_Login(userName, "admin", 2, 2)){
+                            videoState = VIDEO_STATE_LOGIN;
+                        } else {
+                            videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_LOGIN);
                             break;
                         }
+                    case VIDEO_STATE_LOGIN:
+                        if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+                            if(VideoSDK.vPaasSDK_GetZehinTransferId(camId, streamType, 2, userName, 1, 0, 0)){
+
+                            }
+                        } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
+                            // 查询视频列表
+                        }
+                        video.playVideo(camId, streamType, userName, 1, 0, 0);
+                        break;
                 }
             }
         }.start();
-    }
-
-    public void startPlayVideo(){
-
-    }
-
-    /**
-     * gl初始化
-     * @param context
-     */
-    private void initGLSurfaceView(Context context){
-        glSurfaceView.setDrawingCacheEnabled(true);
-        glSurfaceView.setDrawingCacheEnabled(true);
-        glSurfaceView.setEGLConfigChooser(5, 6, 5, 0, 16, 8); // this line is required for clipping
-        mRenderer = new SimpleRenderer(context);
-        glSurfaceView.setRenderer(mRenderer);
-        glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     /**
@@ -303,65 +519,6 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      */
     public void setOnVideoLayoutClickListener(VideoLayoutClickListener listener){
         this.listener = listener;
-    }
-
-    /**
-     * 点击事件监听
-     * ---------------------------------------------------------------------------------------------
-     */
-
-    @Override
-    public void onClick(View v) {
-        if(v == playButtonBig){ // 重播
-            switch (videoPlayState){
-                case VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON:
-                    setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_SMAILSTARTBUTTON);
-                    break;
-                case VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON:
-                    setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
-                    break;
-                default:
-                    return;
-            }
-            if(video.videoIsPlay){
-                playButton.setChecked(true);
-            } else {
-                setVideoPlayLoadStateVisibility(VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
-                videoPlayState = VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
-            }
-            listener.videoPlayStartClickLinstener();
-        } else if(v == playButton){ // 播放/暂停
-            Log.v(LOG,"playButton:"+video.videoIsPlay);
-            if(video.videoIsPlay){
-                playButton.setEnabled(true);//可用
-                listener.videoBottomPlayButtonClickLinstener(playButton.isChecked());
-                if(playButton.isChecked()){ // 恢复播放
-                    playButton.setChecked(true);
-                } else { // 暂停播放
-                    playButton.setChecked(false);
-                }
-            } else {
-                playButton.setChecked(false);
-                playButton.setEnabled(false);//不可用
-            }
-        } else if(v == smallScreenFullButton){ // 全屏
-            listener.videoPlayFullScreenClickLinstener();
-        } else if(v == fullScreenBackButton){ // 退出
-            listener.videoPlayExitClickLinstener();
-        } else if(v == fullScreenDateButton){ // 日历
-            listener.videoPlayDateClickLinstener();
-        } else if(v == fullScreenMoreButton){ // 更多
-            switch (videoLayoutState){
-                case VIDEOLAYOUT_STATE_HEAD_AND_TAIL:
-                case VIDEOLAYOUT_STATE_VIDEOLIST_HIDE:
-                    videoLayoutState = VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
-                    break;
-                case VIDEOLAYOUT_STATE_VIDEOLIST_SHOW:
-                    videoLayoutState = VIDEOLAYOUT_STATE_VIDEOLIST_HIDE;
-                    break;
-            }
-            setShowVideoLayoutState(videoLayoutState);
-        }
     }
 
     /**
@@ -563,6 +720,13 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     // 播放视频控件center布局状态
     public static int videoPlayState = VIDEOLAYOUT_CENTER_STATE_HIDE;
 
+
+
+
+
+
+
+
     /**
      * 静态变量定义
      * ---------------------------------------------------------------------------------------------
@@ -575,6 +739,24 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      */
     public static final int VIDEOLAYOUT_PLAY_TYPE_LIVE = 1000;
     public static final int VIDEOLAYOUT_PLAY_TYPE_PLAYBACK = 1001;
+
+    /**
+     * 视频状态：
+     * 10000：未初始化
+     * 10001：初始化
+     * 10002：连接
+     * 10003：登录
+     * 10004：播放
+     * 10005：暂停
+     * 10006: 查询视频记录成功
+     */
+    public static final int VIDEO_STATE_NOINIT = 10000;
+    public static final int VIDEO_STATE_INIT = 10001;
+    public static final int VIDEO_STATE_CONNET = 10002;
+    public static final int VIDEO_STATE_LOGIN = 10003;
+    public static final int VIDEO_STATE_PLAY = 10004;
+    public static final int VIDEO_STATE_PAUSE = 10005;
+    public static final int VIDEO_STATE_SEARCH = 10006;
 
 
     /**
@@ -667,7 +849,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         addView(progressBar,progressBarParam);
 
         /**
-         * 添加播放暂停button布局
+         * 添加播放/暂停button布局
          */
         playButtonBig = new ImageView(context);
         playButtonBig.setImageResource(R.drawable.video_stop_button);
@@ -863,5 +1045,68 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         LinearLayout.LayoutParams listViewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         videoPlayListLayout.addView(listView,listViewParams);
 
+    }
+
+    /**
+     * 初始化参数
+     */
+    private void initParams(Context context) {
+        // gl初始化
+        initGLSurfaceView(context);
+
+        // 点击播放动画
+        animationPlayButtonRestart = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_restart);
+        // 下边栏动画
+        animationVideoLayoutBottomBarOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_layout_bottombar_open);
+        animationVideoLayoutBottomBarClose = (Animation) AnimationUtils.loadAnimation(context,R.anim.animation_video_layout_bottombar_close);
+        // 上边栏动画
+        animationVideoLayoutTopBarOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_layout_topbar_open);
+        animationVideoLayoutTopBarClose = (Animation) AnimationUtils.loadAnimation(context,R.anim.animation_video_layout_topbar_close);
+        // 视频列表动画
+        animationVideoPlayDataListOpen = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_datalist_open);
+        animationVideoPlayDataListClose = (Animation) AnimationUtils.loadAnimation(context, R.anim.animation_video_datalist_close);
+
+        // 小屏 下边栏 布局
+        smallScreenBottomBarLayout.setVisibility(View.GONE);
+        // 全屏 下边栏 布局
+        fullScreenBottomBarLayout.setVisibility(View.GONE);
+        // 全屏 上边栏 布局
+        fullScreenTopBarLayout.setVisibility(View.GONE);
+        // 视频列表
+        videoPlayListLayout.setVisibility(View.GONE);
+
+        // 菊花转
+        progressBar.setVisibility(View.GONE);
+        // 播放/暂停button Big
+        playButtonBig.setVisibility(View.GONE);
+        // 快进布局
+        videoPlayFoward.setVisibility(View.GONE);
+        // 快进时间
+        fowardText.setText("00:00:00/00:00:00");
+
+        // 播放/暂停 button
+        playButton.setChecked(false); // 暂停
+        // 播放时间
+        playTime.setText("00:00:00/00:00:00");
+        // 日历时间
+        dateText.setText(new DateUtil().getStringDate(new Date(),"yyyy-MM-dd"));
+
+        // 初始化时间
+        mYear = dateUtil.year;
+        mMonth = dateUtil.month;
+        mDay = dateUtil.day;
+    }
+
+    /**
+     * gl初始化
+     * @param context
+     */
+    private void initGLSurfaceView(Context context){
+        glSurfaceView.setDrawingCacheEnabled(true);
+        glSurfaceView.setDrawingCacheEnabled(true);
+        glSurfaceView.setEGLConfigChooser(5, 6, 5, 0, 16, 8); // this line is required for clipping
+        mRenderer = new SimpleRenderer(context);
+        glSurfaceView.setRenderer(mRenderer);
+        glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 }

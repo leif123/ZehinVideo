@@ -104,6 +104,10 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         videoLayout.setOnVideoLayoutClickListener(this);
         // 播放类型-回放
         videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK);
+        // 设置参数
+        videoLayout.setVideoPlayParams(IP, IP, camId, 0);
+        // 开始播放
+        videoLayout.startPlayVideo();
 
         // 获取listView
         data = new ArrayList<VideoPlayRecord>();
