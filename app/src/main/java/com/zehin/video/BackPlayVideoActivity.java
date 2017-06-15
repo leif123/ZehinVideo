@@ -82,17 +82,17 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         initVideoLayout();
 
         // 获取视频单例
-        video = Video.getInstance();
-        video.setOnVideoClickListener(this);
+//        video = Video.getInstance();
+//        video.setOnVideoClickListener(this);
 
         // 消息处理
-        handlerVideoMessage();
+//        handlerVideoMessage();
 
         // 显示日历
-        showCalendar();
+//        showCalendar();
 
         // 请求登录
-        requestLoginVideo();
+//        requestLoginVideo();
     }
 
     /**
@@ -105,37 +105,37 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         // 播放类型-回放
         videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK);
         // 设置参数
-        videoLayout.setVideoPlayParams(IP, IP, camId, 0);
+        videoLayout.setVideoPlayParams(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK, IP, IP, camId, 0);
         // 开始播放
         videoLayout.startPlayVideo();
 
-        // 获取listView
-        data = new ArrayList<VideoPlayRecord>();
-        adapter = new ListAdapter_Video(BackPlayVideoActivity.this, data);
-        videoListView = videoLayout.getVideoLayoutListView();
-        videoListView.setAdapter(adapter);
-        videoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                if(position > -1){
-                    for(int i=0; i<data.size(); i++){
-                        if(i != position){
-                            data.get(i).setStatus("0");
-                        }
-                    }
-                    data.get(position).setStatus("1");
-                    adapter.notifyDataSetChanged(); //刷新布局
-                    playSelectVideo(position);
-                }
-            }
-        });
-
-        // 初始化时间
-        mYear = dateUtil.year;
-        mMonth = dateUtil.month;
-        mDay = dateUtil.day;
+//        // 获取listView
+//        data = new ArrayList<VideoPlayRecord>();
+//        adapter = new ListAdapter_Video(BackPlayVideoActivity.this, data);
+//        videoListView = videoLayout.getVideoLayoutListView();
+//        videoListView.setAdapter(adapter);
+//        videoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view,
+//                                    int position, long id) {
+//                if(position > -1){
+//                    for(int i=0; i<data.size(); i++){
+//                        if(i != position){
+//                            data.get(i).setStatus("0");
+//                        }
+//                    }
+//                    data.get(position).setStatus("1");
+//                    adapter.notifyDataSetChanged(); //刷新布局
+//                    playSelectVideo(position);
+//                }
+//            }
+//        });
+//
+//        // 初始化时间
+//        mYear = dateUtil.year;
+//        mMonth = dateUtil.month;
+//        mDay = dateUtil.day;
     }
 
     /**
@@ -152,14 +152,14 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                         Log.v(LOG,"handlerVideoMessage连接服务失败！");
                         Toast.makeText(BackPlayVideoActivity.this, "连接服务失败！", Toast.LENGTH_SHORT).show();
                         videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
                         break;
                     case Video.VIDEO_ERROR_STATE_LOGIN:
                     case Video.VIDEO_ERROR_STATE_PLAY:
                         Log.v(LOG,"handlerVideoMessage连接超时!");
                         Toast.makeText(BackPlayVideoActivity.this, "连接超时!", Toast.LENGTH_SHORT).show();
                         videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
                         break;
                     case Video.VIDEO_ERROR_STATE_QUERY:
                         Toast.makeText(BackPlayVideoActivity.this, "获取视频列表失败!", Toast.LENGTH_SHORT).show();
@@ -175,7 +175,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                         break;
                     case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
                         Log.v(LOG,"handlerVideoMessage恢复未初始化状态!");
-                        videoResumeNoInfoState();
+//                        videoResumeNoInfoState();
                         break;
                     case Video.VIDEO_STATE_SEARCH: // 返回视频记录列表
                         adapter.notifyDataSetChanged(); //刷新布局
@@ -184,23 +184,23 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                             videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
                         } else {
                             // 修改布局
-                            switch (videoLayout.videoLayoutState){
-                                case VideoLayout.VIDEOLAYOUT_STATE_INIT:
-                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_HEAD_AND_TAIL);
-                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
-                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
-                                    break;
-                                case VideoLayout.VIDEOLAYOUT_STATE_HEAD_AND_TAIL:
-                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
-                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
-                                    break;
-                                case VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW:
-                                    break;
-                                case VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_HIDE:
-                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
-                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
-                                    break;
-                            }
+//                            switch (videoLayout.videoLayoutState){
+//                                case VideoLayout.VIDEOLAYOUT_STATE_INIT:
+//                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_HEAD_AND_TAIL);
+//                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
+//                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
+//                                    break;
+//                                case VideoLayout.VIDEOLAYOUT_STATE_HEAD_AND_TAIL:
+//                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
+//                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
+//                                    break;
+//                                case VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW:
+//                                    break;
+//                                case VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_HIDE:
+//                                    videoLayout.setShowVideoLayoutState(VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW);
+//                                    videoLayout.videoLayoutState = VideoLayout.VIDEOLAYOUT_STATE_VIDEOLIST_SHOW;
+//                                    break;
+//                            }
                             // 播放第一条视频记录
                             playSelectVideo(0);
                         }
@@ -208,7 +208,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                     case Video.VIDEO_STATE_PLAY: // 开始播放
                         Log.v(LOG,"handlerVideoMessage开始播放!");
                         videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
                         videoLayout.playButton.setChecked(true);
                         break;
                     case VIDEO_CHANGE_TIME: // 更新时间
@@ -245,34 +245,6 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
      * ---------------------------------------------------------------------------------------------
      */
 
-    @Override
-    public void initVideo(boolean arg0) {
-        Log.v(LOG, "loginVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_INIT;
-    }
-
-    @Override
-    public void connetVideo(boolean arg0) {
-        Log.v(LOG, "connetVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_CONNET;
-    }
-
-    @Override
-    public void loginVideo(boolean arg0) {
-        Log.v(LOG, "loginVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_LOGIN;
-    }
-
-    @Override
-    public void playVideo(boolean arg0) {
-        Log.v(LOG, "playVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_PLAY;
-    }
-
     @Override // 返回视频记录列表
     public void videoPlayRecord(List<VideoPlayRecord> list) {
         data.clear();
@@ -282,14 +254,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override // 收到播放流
     public void videoMessageData(int width, int height, byte[] data) {
-        if(video.videoState == Video.VIDEO_STATE_PLAY){ // 播放状态
-            videoLayout.upDateRenderer(width,height,data);
-            if(!video.videoIsPlay) {
-                video.videoIsPlay = true;
-                // 开始播放
-                videoHandler.sendEmptyMessage(Video.VIDEO_STATE_PLAY);
-            }
-        }
+
     }
 
     @Override // 视频播放时间
@@ -314,19 +279,19 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override //  重播button
     public void videoPlayStartClickLinstener() {
-        if(video.videoIsPlay){ // 恢复
-            if(video.videoPlayControl(0, 1, camId)){
-                Log.v(LOG, "videoPlayControl:播放true");
-            } else {
-                Log.v(LOG, "videoPlayControl:播放false");
-            }
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
-            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
-        } else { // 重播
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
-            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
-            requestStartPlayVideo();
-        }
+//        if(video.videoIsPlay){ // 恢复
+//            if(video.videoPlayControl(0, 1, camId)){
+//                Log.v(LOG, "videoPlayControl:播放true");
+//            } else {
+//                Log.v(LOG, "videoPlayControl:播放false");
+//            }
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
+//            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
+//        } else { // 重播
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR);
+//            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_PROGRESSBAR;
+//            requestStartPlayVideo();
+//        }
     }
 
     @Override // 小屏 全屏button
@@ -336,7 +301,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override // 全屏 退出button
     public void videoPlayExitClickLinstener() {
-        videoResumeNoInfoState();
+//        videoResumeNoInfoState();
         finish();
     }
 
@@ -347,23 +312,23 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override // 全屏 下边栏playButton
     public void videoBottomPlayButtonClickLinstener(boolean isChecked) {
-        if(isChecked){ // 恢复播放
-            if(video.videoPlayControl(0, 1, camId)){
-                Log.v(LOG, "videoPlayControl:播放true");
-            } else {
-                Log.v(LOG, "videoPlayControl:播放false");
-            }
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
-            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
-        } else {  // 暂停播放
-            if(video.videoPlayControl(0, 0, camId)){
-                Log.v(LOG, "videoPlayControl:暂停true");
-            }else{
-                Log.v(LOG, "videoPlayControl:暂停false");
-            }
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON);
-            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
-        }
+//        if(isChecked){ // 恢复播放
+//            if(video.videoPlayControl(0, 1, camId)){
+//                Log.v(LOG, "videoPlayControl:播放true");
+//            } else {
+//                Log.v(LOG, "videoPlayControl:播放false");
+//            }
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON);
+//            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTARTBUTTON;
+//        } else {  // 暂停播放
+//            if(video.videoPlayControl(0, 0, camId)){
+//                Log.v(LOG, "videoPlayControl:暂停true");
+//            }else{
+//                Log.v(LOG, "videoPlayControl:暂停false");
+//            }
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON);
+//            videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_FULLSTOPBUTTON;
+//        }
     }
 
     @Override // 进度条更新
@@ -387,38 +352,13 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        videoResumeNoInfoState();
+//        videoResumeNoInfoState();
+        // 退出播放
+        videoLayout.exitPlayVideo();
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * 请求登录
-     */
-    public void requestLoginVideo(){
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                switch (video.videoState){
-                    case Video.VIDEO_STATE_NOINIT:
-                        if(video.initVideo()){
-                            video.setVideoParams(IP, IP);
-                        } else {
-                            break;
-                        }
-                    case Video.VIDEO_STATE_INIT:
-                        if(!video.connetVideo()) {
-                            break;
-                        }
-                    case Video.VIDEO_STATE_CONNET:
-                        userName = UUID.randomUUID().toString();
-                        if(!video.loginVideo(userName)){
-                            break;
-                        }
-                }
-            }
-        }.start();
-    }
+
 
     /**
      * 请求播放
@@ -430,24 +370,6 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
             public void run() {
                 super.run();
                 switch (video.videoState){
-                    case Video.VIDEO_STATE_NOINIT:
-                        Log.v(LOG,"VIDEO_STATE_NOINIT");
-                        if(video.initVideo()){
-                            video.setVideoParams(IP, IP);
-                        } else {
-                            break;
-                        }
-                    case Video.VIDEO_STATE_INIT:
-                        Log.v(LOG,"VIDEO_STATE_INIT");
-                        if(!video.connetVideo()) {
-                            break;
-                        }
-                    case Video.VIDEO_STATE_CONNET:
-                        Log.v(LOG,"VIDEO_STATE_CONNET");
-                        userName = UUID.randomUUID().toString();
-                        if(!video.loginVideo(userName)){
-                            break;
-                        }
                     case Video.VIDEO_STATE_LOGIN:
                         Log.v(LOG,"VIDEO_STATE_LOGIN");
                         video.searchVideoList(camId,mYear*10000+(mMonth+1)*100+mDay);
@@ -490,7 +412,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                             case Video.VIDEO_STATE_PLAY:
                             case Video.VIDEO_STATE_PAUSE:
                             case Video.VIDEO_STATE_SEARCH:
-                                video.playVideo(camId,streamType,userName,2,dateUtil.dateToInt(video.startTime),dateUtil.timeToInt(video.startTime));
+//                                video.playVideo(camId,streamType,userName,2,dateUtil.dateToInt(video.startTime),dateUtil.timeToInt(video.startTime));
                                 break;
                         }
 					}

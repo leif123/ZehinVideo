@@ -10,30 +10,6 @@ import java.util.List;
 public interface VideoClickListener {
 
     /**
-     * 初始化
-     * @param arg0 true:成功
-     */
-    public void initVideo(boolean arg0);
-
-    /**
-     * 连接
-     * @param arg0 true:成功
-     */
-    public void connetVideo(boolean arg0);
-
-    /**
-     * 登陆
-     * @param arg0 true:成功
-     */
-    public void loginVideo(boolean arg0);
-
-    /**
-     * 播放
-     * @param arg0 true:成功
-     */
-    public void playVideo(boolean arg0);
-
-    /**
      * 返回视频记录列表
      * @param list
      */

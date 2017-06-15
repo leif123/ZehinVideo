@@ -91,58 +91,6 @@ public class Video {
     public Date tempTime = new Date();
 
     /**
-     * 初始化
-     * @return
-     */
-    public boolean initVideo(){
-        if(VideoSDK.vPaasSDK_Init()){
-            listener.initVideo(true);
-            return true;
-        }
-        listener.videoErrorListener(VIDEO_ERROR_STATE_INIT);
-        return false;
-    }
-
-    /**
-     * 配置参数
-     */
-    public void setVideoParams(String stunIP, String centerIP){
-        VideoSDK.vPaasSDK_SetStunIP(stunIP);
-        VideoSDK.vPaasSDK_SetCenterIP(centerIP);
-        VideoSDK.vPaasSDK_SetCenterCmdPort(10000);
-        VideoSDK.vPaasSDK_SetCenterHeartPort(20000);
-        VideoSDK.vPaasSDK_SetCmdCallBack();
-    }
-
-    /**
-     * 建立连接
-     * @return
-     */
-    public boolean connetVideo(){
-        if (VideoSDK.vPaasSDK_ConnetStunSer()){
-            listener.connetVideo(true);
-            return true;
-        }
-        listener.videoErrorListener(VIDEO_ERROR_STATE_CONNET);
-        return false;
-    }
-
-    /**
-     * 登录
-     * @param userName 用户名
-     * @return
-     */
-    public boolean loginVideo(String userName){
-        int login = VideoSDK.vPaasSDK_Login(userName, "admin", 2, 2);
-        if(login == 1000){
-            listener.loginVideo(true);
-            return true;
-        }
-        listener.videoErrorListener(VIDEO_ERROR_STATE_LOGIN);
-        return false;
-    }
-
-    /**
      * 获取视频列表
      * @param camId camId
      * @param date 日期 格式：20170606（2017年6月6号）
@@ -153,25 +101,6 @@ public class Video {
             return true;
         }
         listener.videoErrorListener(VIDEO_ERROR_STATE_QUERY);
-        return false;
-    }
-
-    /**
-     * 请求播放
-     * @param camId camId
-     * @param streamType 码流类型:0-主码流; 1-子码流
-     * @param userName 用户名
-     * @param type 播放类型：1：直播；2：回放
-     * @param date 回放日期
-     * @param time 回放时间
-     * @return
-     */
-    public boolean playVideo(int camId,int streamType,String userName, int type, int date, int time){
-        if(VideoSDK.vPaasSDK_GetZehinTransferId(camId, streamType, 2, userName, type, date, time)){
-            listener.playVideo(true);
-            return true;
-        }
-        listener.videoErrorListener(VIDEO_ERROR_STATE_PLAY);
         return false;
     }
 

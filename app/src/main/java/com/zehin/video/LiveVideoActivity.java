@@ -37,12 +37,13 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     private APPScreen screen = null;
 
-    //
-    private String IP = "218.201.111.234";
+    private String IP = "123.234.227.107";
+//    private String IP = "218.201.111.234";
 //    private String IP = "192.168.3.158";
     private String userName = UUID.randomUUID().toString();
-    private int camId = 1062043;
+//    private int camId = 1062043;
 //    private int camId = 1062091;
+    private int camId = 13558;
     private int streamType = 0;
 
     @Override
@@ -52,14 +53,14 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         initVideoLayout();
 
         // 获取视频单例
-        video = Video.getInstance();
-        video.setOnVideoClickListener(this);
+//        video = Video.getInstance();
+//        video.setOnVideoClickListener(this);
 
         // 消息处理
-        handlerVideoMessage();
+//        handlerVideoMessage();
 
         // 请求播放视频
-        requestStartPlayVideo();
+//        requestStartPlayVideo();
 
         screen = new APPScreen(this);
     }
@@ -74,7 +75,7 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         // 播放类型-直播
         videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE);
         // 设置参数
-        videoLayout.setVideoPlayParams(IP, IP, camId, 0);
+        videoLayout.setVideoPlayParams(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE, IP, IP, camId, 0);
         // 开始播放
         videoLayout.startPlayVideo();
     }
@@ -87,29 +88,29 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                switch (msg.what){
-                    case Video.VIDEO_ERROR_STATE_INIT:
-                    case Video.VIDEO_ERROR_STATE_CONNET:
-                        Toast.makeText(LiveVideoActivity.this, "连接服务失败！", Toast.LENGTH_SHORT).show();
-                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
-                        break;
-                    case Video.VIDEO_ERROR_STATE_LOGIN:
-                    case Video.VIDEO_ERROR_STATE_PLAY:
-                        Toast.makeText(LiveVideoActivity.this, "连接超时!", Toast.LENGTH_SHORT).show();
-                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
-                        break;
-                    case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
-                        videoResumeNoInfoState();
-                        break;
-                    case Video.VIDEO_STATE_PLAY: // 开始播放
-                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
-                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
-                        break;
-                    default:
-                        break;
-                }
+//                switch (msg.what){
+//                    case Video.VIDEO_ERROR_STATE_INIT:
+//                    case Video.VIDEO_ERROR_STATE_CONNET:
+//                        Toast.makeText(LiveVideoActivity.this, "连接服务失败！", Toast.LENGTH_SHORT).show();
+//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
+//                        break;
+//                    case Video.VIDEO_ERROR_STATE_LOGIN:
+//                    case Video.VIDEO_ERROR_STATE_PLAY:
+//                        Toast.makeText(LiveVideoActivity.this, "连接超时!", Toast.LENGTH_SHORT).show();
+//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
+//                        break;
+//                    case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
+//                        videoResumeNoInfoState();
+//                        break;
+//                    case Video.VIDEO_STATE_PLAY: // 开始播放
+//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
+//                        break;
+//                    default:
+//                        break;
+//                }
             }
         };
     }
@@ -120,48 +121,13 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
      */
 
     @Override
-    public void initVideo(boolean arg0) {
-        Log.v(LOG, "initVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_INIT;
-    }
-
-    @Override
-    public void connetVideo(boolean arg0) {
-        Log.v(LOG, "connetVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_CONNET;
-    }
-
-    @Override
-    public void loginVideo(boolean arg0) {
-        Log.v(LOG, "loginVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_LOGIN;
-    }
-
-    @Override
-    public void playVideo(boolean arg0) {
-        Log.v(LOG, "playVideo:"+arg0);
-        if (arg0)
-            video.videoState = Video.VIDEO_STATE_PLAY;
-    }
-
-    @Override
     public void videoPlayRecord(List<VideoPlayRecord> list) {
 
     }
 
     @Override
     public void videoMessageData(int width, int height, byte[] data) {
-        if(video.videoState == Video.VIDEO_STATE_PLAY){ // 播放状态
-            videoLayout.upDateRenderer(width,height,data);
-            if(!video.videoIsPlay) {
-                video.videoIsPlay = true;
-                // 开始播放
-                videoHandler.sendEmptyMessage(Video.VIDEO_STATE_PLAY);
-            }
-        }
+
     }
 
     @Override
@@ -183,10 +149,9 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
     @Override
     public void videoPlayStartClickLinstener() {
         Log.d(LOG, "videoPlayStartClickLinstener");
-        requestStartPlayVideo();
     }
 
-    @Override
+    @Override // 全屏
     public void videoPlayFullScreenClickLinstener() {
         if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // 设置小屏
@@ -236,41 +201,10 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
             videoLayout.setLayoutParams(new RelativeLayout.LayoutParams(screen.getAPPScreenWidth(), 500));
             return true;
         } else {
-            videoHandler.sendEmptyMessage(Video.VIDEO_STATE_NOINIT);
+            // 退出播放
+            videoLayout.exitPlayVideo();
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    /**
-     * 请求播放
-     */
-    private void requestStartPlayVideo(){
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                switch (video.videoState){
-                    case Video.VIDEO_STATE_NOINIT:
-                        if(video.initVideo()){
-                            video.setVideoParams(IP, IP);
-                        } else {
-                          break;
-                        }
-                    case Video.VIDEO_STATE_INIT:
-                        if(!video.connetVideo()) {
-                            break;
-                        }
-                    case Video.VIDEO_STATE_CONNET:
-                        userName = UUID.randomUUID().toString();
-                        if(!video.loginVideo(userName)){
-                            break;
-                        }
-                    case Video.VIDEO_STATE_LOGIN:
-                        video.playVideo(camId, streamType, userName, 1, 0, 0);
-                        break;
-                }
-            }
-        }.start();
     }
 
     /**
