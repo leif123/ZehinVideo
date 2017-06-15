@@ -85,10 +85,14 @@ public class Video {
     /**
      * 时间
      */
-    public Date startTime; // 开始时间
-    public Date endTime; // 结束时间
+//    public Date startTime; // 开始时间
+//    public Date endTime; // 结束时间
     public Date nowTime; // 现在时间
-    public Date tempTime = new Date();
+//    public Date tempTime = new Date();
+
+    public void setNowTime(Date nowTime){
+        this.nowTime = nowTime;
+    }
 
     /**
      * 获取视频列表
@@ -174,8 +178,8 @@ public class Video {
 //        if(VideoLayout.videoPlayType == VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){
 //            Log.v(LOG, "回放时间");
 //            if(Math.abs(nowTime.getTime()-dateUtil.intToDate(nowTime,hour,minute,second).getTime())<10*60*1000){ // 时间差小于10分钟
-//                nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
-//                listener.videoUpDateTime(nowTime);
+                nowTime = dateUtil.intToDate(nowTime,hour,minute,second);
+                listener.videoUpDateTime(nowTime);
 //            } else{
 //                Log.v(LOG, "时间差不小于10分钟");
 //                Log.v(LOG, nowTime.toString());

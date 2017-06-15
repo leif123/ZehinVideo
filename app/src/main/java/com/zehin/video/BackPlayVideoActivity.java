@@ -107,7 +107,7 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
         // 设置参数
         videoLayout.setVideoPlayParams(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK, IP, IP, camId, 0);
         // 开始播放
-        videoLayout.startPlayVideo();
+//        videoLayout.startPlayVideo();
 
 //        // 获取listView
 //        data = new ArrayList<VideoPlayRecord>();
@@ -212,26 +212,26 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                         videoLayout.playButton.setChecked(true);
                         break;
                     case VIDEO_CHANGE_TIME: // 更新时间
-                        videoLayout.setVideoLayoutTime(dateUtil.getStringDate(video.nowTime,DateUtil.DATE_FORMAT_HMS)+"/"+dateUtil.getStringDate(video.endTime,DateUtil.DATE_FORMAT_HMS));
+//                        videoLayout.setVideoLayoutTime(dateUtil.getStringDate(video.nowTime,DateUtil.DATE_FORMAT_HMS)+"/"+dateUtil.getStringDate(video.endTime,DateUtil.DATE_FORMAT_HMS));
                         break;
                     case VIDEO_CHANGE_SEEKBAR: // 更新进度条
-                        if((video.endTime.getTime()-video.startTime.getTime() == 0)){
-                            videoLayout.setVideoLayoutSeekBar(0);
-                        } else if(video.nowTime.getTime()>video.endTime.getTime()){ // 播放下一条
-                            for(int i=0; i<data.size(); i++){
-                                if("1".equals(data.get(i).getStatus())){
-                                    if(data.size() > i+2){
-                                        data.get(i).setStatus("0");
-                                        data.get(i+1).setStatus("1");
-                                        adapter.notifyDataSetChanged(); //刷新布局
-                                        playSelectVideo(i+1);
-                                    }
-                                    break;
-                                }
-                            }
-                        } else {
-                            videoLayout.setVideoLayoutSeekBar((int)((video.nowTime.getTime()-video.startTime.getTime())*100/(video.endTime.getTime()-video.startTime.getTime())));
-                        }
+//                        if((video.endTime.getTime()-video.startTime.getTime() == 0)){
+//                            videoLayout.setVideoLayoutSeekBar(0);
+//                        } else if(video.nowTime.getTime()>video.endTime.getTime()){ // 播放下一条
+//                            for(int i=0; i<data.size(); i++){
+//                                if("1".equals(data.get(i).getStatus())){
+//                                    if(data.size() > i+2){
+//                                        data.get(i).setStatus("0");
+//                                        data.get(i+1).setStatus("1");
+//                                        adapter.notifyDataSetChanged(); //刷新布局
+//                                        playSelectVideo(i+1);
+//                                    }
+//                                    break;
+//                                }
+//                            }
+//                        } else {
+//                            videoLayout.setVideoLayoutSeekBar((int)((video.nowTime.getTime()-video.startTime.getTime())*100/(video.endTime.getTime()-video.startTime.getTime())));
+//                        }
                         break;
                     default:
                         break;
@@ -333,20 +333,20 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override // 进度条更新
     public void onStopTrackingTouch(SeekBar seekBar) { // 根据时间差 判断是否更新进度条
-        if(video.videoIsPlay){
-            video.videoPlayControl(0, 1, camId); // 恢复播放
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
-            video.nowTime.setTime(video.startTime.getTime()+(long)((video.endTime.getTime()-video.startTime.getTime())*seekBar.getProgress()/100));
-            // 请求跳转
-            video.videoPlayControl(1,dateUtil.timeToInt(video.nowTime),camId);
-        }
+//        if(video.videoIsPlay){
+//            video.videoPlayControl(0, 1, camId); // 恢复播放
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+//            video.nowTime.setTime(video.startTime.getTime()+(long)((video.endTime.getTime()-video.startTime.getTime())*seekBar.getProgress()/100));
+//            // 请求跳转
+//            video.videoPlayControl(1,dateUtil.timeToInt(video.nowTime),camId);
+//        }
     }
 
     @Override // 滑动屏幕
     public void onTouchEventClickLinstener() {
-        video.videoPlayControl(0, 1, camId); // 恢复播放
-        // 请求跳转
-        video.videoPlayControl(1,dateUtil.timeToInt(video.tempTime),camId);
+//        video.videoPlayControl(0, 1, camId); // 恢复播放
+//        // 请求跳转
+//        video.videoPlayControl(1,dateUtil.timeToInt(video.tempTime),camId);
     }
 
 
@@ -384,44 +384,44 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
      * @param index 第几条  从0开始
      */
     private void playSelectVideo(int index) {
-        video.videoIsPlay = false;
-        if(data.size()>0){
-            video.startTime = data.get(index).getStartTime();
-            video.endTime = data.get(index).getStopTime();
-            video.nowTime = data.get(index).getStartTime();
-            Log.v(LOG,"startTime"+video.startTime);
-            Log.v(LOG,"endTime"+video.endTime);
-            Log.v(LOG,"nowTime"+video.nowTime);
-            new Thread(){
-                public void run() {
-					if(video.videoIsPlay){ // 视频跳转
-                        video.videoPlayControl(0, 1, camId); // 恢复播放
-						if(video.videoPlayControl(1, dateUtil.timeToInt(video.startTime), camId)){
-                            Log.d(LOG,"videoPlayControl:true");
-					    }else{
-					    	videoHandler.sendEmptyMessage(Video.VIDEO_STATE_NOINIT);
-					    }
-					} else { // 请求回放
-                        switch (video.videoState){
-                            case Video.VIDEO_STATE_NOINIT:
-                            case Video.VIDEO_STATE_INIT:
-                            case Video.VIDEO_STATE_CONNET:
-                                requestStartPlayVideo();
-                                break;
-                            case Video.VIDEO_STATE_LOGIN:
-                            case Video.VIDEO_STATE_PLAY:
-                            case Video.VIDEO_STATE_PAUSE:
-                            case Video.VIDEO_STATE_SEARCH:
-//                                video.playVideo(camId,streamType,userName,2,dateUtil.dateToInt(video.startTime),dateUtil.timeToInt(video.startTime));
-                                break;
-                        }
-					}
-                }
-            }.start();
-        }else{
-            Toast.makeText(BackPlayVideoActivity.this, "未查询到视频记录", Toast.LENGTH_SHORT).show();
-            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
-        }
+//        video.videoIsPlay = false;
+//        if(data.size()>0){
+//            video.startTime = data.get(index).getStartTime();
+//            video.endTime = data.get(index).getStopTime();
+//            video.nowTime = data.get(index).getStartTime();
+//            Log.v(LOG,"startTime"+video.startTime);
+//            Log.v(LOG,"endTime"+video.endTime);
+//            Log.v(LOG,"nowTime"+video.nowTime);
+//            new Thread(){
+//                public void run() {
+//					if(video.videoIsPlay){ // 视频跳转
+//                        video.videoPlayControl(0, 1, camId); // 恢复播放
+//						if(video.videoPlayControl(1, dateUtil.timeToInt(video.startTime), camId)){
+//                            Log.d(LOG,"videoPlayControl:true");
+//					    }else{
+//					    	videoHandler.sendEmptyMessage(Video.VIDEO_STATE_NOINIT);
+//					    }
+//					} else { // 请求回放
+//                        switch (video.videoState){
+//                            case Video.VIDEO_STATE_NOINIT:
+//                            case Video.VIDEO_STATE_INIT:
+//                            case Video.VIDEO_STATE_CONNET:
+//                                requestStartPlayVideo();
+//                                break;
+//                            case Video.VIDEO_STATE_LOGIN:
+//                            case Video.VIDEO_STATE_PLAY:
+//                            case Video.VIDEO_STATE_PAUSE:
+//                            case Video.VIDEO_STATE_SEARCH:
+////                                video.playVideo(camId,streamType,userName,2,dateUtil.dateToInt(video.startTime),dateUtil.timeToInt(video.startTime));
+//                                break;
+//                        }
+//					}
+//                }
+//            }.start();
+//        }else{
+//            Toast.makeText(BackPlayVideoActivity.this, "未查询到视频记录", Toast.LENGTH_SHORT).show();
+//            videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
+//        }
     }
 
     /**
