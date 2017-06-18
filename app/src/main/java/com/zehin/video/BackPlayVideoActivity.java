@@ -50,16 +50,8 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
     private static final int VIDEO_CHANGE_TIME = 5000; // 时间更新
     private static final int VIDEO_CHANGE_SEEKBAR = 5001; // 进度条更新
 
-    //
-    private String IP = "218.201.111.234";
-//    private String IP = "123.234.227.107";
-//    private String IP = "192.168.3.158";
-    private String userName = UUID.randomUUID().toString();
-    private int camId = 1062043;
-//    private int camId = 5126; // 交通公司
-//    private int camId = 13558;
-//    private int camId = 1062091;
-//    private int camId = 1061419;
+    private String IP = "";
+    private int camId = 0;
     private int streamType = 0;
 
     // 时间
@@ -80,62 +72,22 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_video_backplay);
         initVideoLayout();
-
-        // 获取视频单例
-//        video = Video.getInstance();
-//        video.setOnVideoClickListener(this);
-
-        // 消息处理
-//        handlerVideoMessage();
-
-        // 显示日历
-//        showCalendar();
-
-        // 请求登录
-//        requestLoginVideo();
     }
 
     /**
      * 初始化视频布局
      */
     private void initVideoLayout() {
+        IP = getIntent().getStringExtra("IP");
+        camId = getIntent().getIntExtra("camId",0);
+        streamType = getIntent().getIntExtra("streamType",0);
         // 获取视频布局
         videoLayout = (VideoLayout) findViewById(R.id.video);
         videoLayout.setOnVideoLayoutClickListener(this);
         // 播放类型-回放
         videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK);
         // 设置参数
-        videoLayout.setVideoPlayParams(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_PLAYBACK, IP, IP, camId, 0);
-        // 开始播放
-//        videoLayout.startPlayVideo();
-
-//        // 获取listView
-//        data = new ArrayList<VideoPlayRecord>();
-//        adapter = new ListAdapter_Video(BackPlayVideoActivity.this, data);
-//        videoListView = videoLayout.getVideoLayoutListView();
-//        videoListView.setAdapter(adapter);
-//        videoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view,
-//                                    int position, long id) {
-//                if(position > -1){
-//                    for(int i=0; i<data.size(); i++){
-//                        if(i != position){
-//                            data.get(i).setStatus("0");
-//                        }
-//                    }
-//                    data.get(position).setStatus("1");
-//                    adapter.notifyDataSetChanged(); //刷新布局
-//                    playSelectVideo(position);
-//                }
-//            }
-//        });
-//
-//        // 初始化时间
-//        mYear = dateUtil.year;
-//        mMonth = dateUtil.month;
-//        mDay = dateUtil.day;
+        videoLayout.setVideoPlayParams(IP, IP, camId, streamType);
     }
 
     /**

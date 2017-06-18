@@ -37,13 +37,8 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     private APPScreen screen = null;
 
-    private String IP = "123.234.227.107";
-//    private String IP = "218.201.111.234";
-//    private String IP = "192.168.3.158";
-    private String userName = UUID.randomUUID().toString();
-//    private int camId = 1062043;
-//    private int camId = 1062091;
-    private int camId = 13558;
+    private String IP = "";
+    private int camId = 0;
     private int streamType = 0;
 
     @Override
@@ -51,31 +46,23 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_live);
         initVideoLayout();
-
-        // 获取视频单例
-//        video = Video.getInstance();
-//        video.setOnVideoClickListener(this);
-
-        // 消息处理
-//        handlerVideoMessage();
-
-        // 请求播放视频
-//        requestStartPlayVideo();
-
-        screen = new APPScreen(this);
+        screen = new APPScreen(this); // 旋转屏幕
     }
 
     /**
      * 初始化视频布局
      */
     private void initVideoLayout() {
+        IP = getIntent().getStringExtra("IP");
+        camId = getIntent().getIntExtra("camId",0);
+        streamType = getIntent().getIntExtra("streamType",0);
         // 获取视频布局
         videoLayout = (VideoLayout) findViewById(R.id.video);
         videoLayout.setOnVideoLayoutClickListener(this);
         // 播放类型-直播
         videoLayout.setVideoPlayType(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE);
         // 设置参数
-        videoLayout.setVideoPlayParams(VideoLayout.VIDEOLAYOUT_PLAY_TYPE_LIVE, IP, IP, camId, 0);
+        videoLayout.setVideoPlayParams(IP, IP, camId, streamType);
         // 开始播放
         videoLayout.startPlayVideo();
     }

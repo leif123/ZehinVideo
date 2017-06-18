@@ -147,14 +147,21 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             }
 //            listener.videoPlayStartClickLinstener();
         } else if(v == playButton){ // 播放/暂停
-            Log.v(LOG,"playButton:"+video.videoIsPlay);
-            if(video.videoIsPlay){
+            Log.v(LOG,"playButton:"+videoIsPlay);
+            if(videoIsPlay){
                 playButton.setEnabled(true);//可用
-                listener.videoBottomPlayButtonClickLinstener(playButton.isChecked());
                 if(playButton.isChecked()){ // 恢复播放
-                    playButton.setChecked(true);
+                    if (videoState == VIDEO_STATE_PAUSE){
+                        playButton.setChecked(true);
+                        videoState = VIDEO_STATE_PLAY;
+                        VideoSDK.vPaasSDK_BackStreamControl(0,1,camId,0);
+                    }
                 } else { // 暂停播放
-                    playButton.setChecked(false);
+                    if (videoState == VIDEO_STATE_PLAY){
+                        playButton.setChecked(false);
+                        videoState = VIDEO_STATE_PAUSE;
+                        VideoSDK.vPaasSDK_BackStreamControl(0,0,camId,0);
+                    }
                 }
             } else {
                 playButton.setChecked(false);
@@ -381,8 +388,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      * @param centerIP
      * @param camId
      */
-    public void setVideoPlayParams(int type, String stunIP, String centerIP, int camId, int streamType){
-        this.videoPlayType = type;
+    public void setVideoPlayParams(String stunIP, String centerIP, int camId, int streamType){
         this.stunIP = stunIP;
         this.centerIP = centerIP;
         this.camId = camId;
@@ -830,9 +836,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     @Override  // 收到播放流
     public void videoMessageData(int width, int height, byte[] data) {
         try {
-            Log.v(LOG, "--------1>"+videoState);
             if(videoState == VIDEO_STATE_PLAY){
-                Log.v(LOG, "--------2>"+videoPlayType);
                 if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
                     mRenderer.updata(width, height, data);
                     glSurfaceView.requestRender();
@@ -893,6 +897,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                     isWhetherHaveTime = true; // 判断完成
                     videoIsHaveTime = true; // 有实时时间
                     // 处理数据
+                    Log.v(LOG,"有实时时间");
                 } else {
                     tempNum++;
                 }
@@ -901,9 +906,11 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 if (date1 != date3){
                     videoIsHaveTime = true; // 有实时时间
                     isBackPlayVideoSuccess = true;
+                    Log.v(LOG,"有实时时间");
                     //
-                } else{
+                } else {
                     videoIsHaveTime = false; // 没有实时时间
+                    Log.v(LOG,"没有实时时间");
                 }
                 isWhetherHaveTime = true; // 判断完成
             }
