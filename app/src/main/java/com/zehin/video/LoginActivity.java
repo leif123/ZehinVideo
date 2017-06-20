@@ -16,13 +16,14 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private Button button1;
     private Button button2;
 
-//    private String IP = "123.234.227.107";
-    private String IP = "218.201.111.234";
+    private String IP = "123.234.227.107";
+//    private String IP = "218.201.111.234";
 //    private String IP = "192.168.3.158";
 //    private int camId = 1062043;
-    private int camId = 1062091;
+//    private int camId = 1062091;
 //   private int camId = 5126; // 交通公司
 //    private int camId = 13558;
+    private int camId = 14920;
     private int streamType = 0;
 
     @Override

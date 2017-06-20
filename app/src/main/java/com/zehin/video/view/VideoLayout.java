@@ -115,7 +115,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
 //                    animationPlayButtonRestart.setFillAfter(true);
 //                    animationPlayButtonRestart.setFillBefore(false);
 //                    playButtonBig.setImageResource(R.drawable.video_start_button);
-//                    playButtonBig.setVisibility(View.VISIBLE);
+                    playButtonBig.setVisibility(View.GONE);
 //                    playButtonBig.startAnimation(animationPlayButtonRestart);
                 } else if (videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK) { // 回放
 //                    animationPlayButtonRestart.setFillAfter(true);
@@ -126,8 +126,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 }
                 // 加载
                 progressBar.setVisibility(View.VISIBLE);
-//                // 请求播放
-//                startPlayVideo();
+                // 请求播放
+                startPlayVideo();
 //            }
 //            switch (videoPlayState){
 //                case VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON:
@@ -153,7 +153,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 if(playButton.isChecked()){ // 恢复播放
                     if (videoState == VIDEO_STATE_PAUSE){
                         playButton.setChecked(true);
-                        videoState = VIDEO_STATE_PLAY;
+                        videoState = VIDEO_STATE_PLAY_WAIT;
                         VideoSDK.vPaasSDK_BackStreamControl(0,1,camId,0);
                     }
                 } else { // 暂停播放
@@ -288,6 +288,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                         break;
                     case VIDEO_STATE_PLAY: // 开始播放
                         progressBar.setVisibility(View.GONE);
+                        playButton.setEnabled(true);//可用
+                        playButton.setChecked(true);
 //                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
 //                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
                         break;
@@ -344,7 +346,10 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                             }
                             data.get(position).setStatus("1");
                             adapter.notifyDataSetChanged(); //刷新布局
+                            videoState = VIDEO_STATE_PLAY_WAIT;
                             progressBar.setVisibility(View.VISIBLE);
+                            playButton.setEnabled(false);//不可用
+                            playButton.setChecked(false);
                             // 请求播放
                             playSelectVideo(1,position);
                         }
@@ -439,7 +444,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                         if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
                             if(VideoSDK.vPaasSDK_GetZehinTransferId(camId, streamType, 2, userName, 1, 0, 0)){
                                 Log.d(LOG, "直播");
-                                videoState = VIDEO_STATE_PLAY;
+                                videoState = VIDEO_STATE_PLAY_WAIT;
                             } else {
                                 videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_PLAY);
                             }
@@ -473,15 +478,30 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 @Override
                 public void run() {
                     super.run();
-                    if(type == 1 && isBackPlayVideoSuccess){ // 跳转
+//                    if(type == 1 && isBackPlayVideoSuccess){ // 跳转
+//                        if (videoState == VIDEO_STATE_PAUSE){ // 恢复播放
+//                            VideoSDK.vPaasSDK_BackStreamControl(0,1,camId,0);
+//                        }
+//                        VideoSDK.vPaasSDK_BackStreamControl(1,dateUtil.timeToInt(startTime),camId,0);// 跳转
+//                    } else { // 请求回放
+                    if(isBackPlayVideoSuccess){
                         if (videoState == VIDEO_STATE_PAUSE){ // 恢复播放
                             VideoSDK.vPaasSDK_BackStreamControl(0,1,camId,0);
                         }
-                        VideoSDK.vPaasSDK_BackStreamControl(1,dateUtil.timeToInt(startTime),camId,0);// 跳转
-                    } else { // 请求回放
+                        // 停止播放
+                        if(0 != VideoSDK.vPaasSDK_StopPlay()){
+                            Log.e(LOG, "stopPlayStream fail");
+                        }
                         if(VideoSDK.vPaasSDK_GetZehinTransferId(camId, streamType, 2, userName, 2, dateUtil.dateToInt(startTime),dateUtil.timeToInt(startTime))){
                             Log.d(LOG, "回放");
-                            videoState = VIDEO_STATE_PLAY;
+                            videoState = VIDEO_STATE_PLAY_WAIT;
+                        } else {
+                            videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_PLAY);
+                        }
+                    } else {
+                        if(VideoSDK.vPaasSDK_GetZehinTransferId(camId, streamType, 2, userName, 2, dateUtil.dateToInt(startTime),dateUtil.timeToInt(startTime))){
+                            Log.d(LOG, "回放");
+                            videoState = VIDEO_STATE_PLAY_WAIT;
                         } else {
                             videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_PLAY);
                         }
@@ -508,6 +528,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                 int logout = VideoSDK.vPaasSDK_Logout();
                 Log.v(LOG, "vPaasSDK_Logout:"+logout);
                 break;
+            case VIDEO_STATE_PLAY_WAIT:
             case VIDEO_STATE_PLAY:
             case VIDEO_STATE_PAUSE:
             case VIDEO_STATE_SEARCH:
@@ -837,35 +858,35 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     public void videoMessageData(int width, int height, byte[] data) {
         try {
             if(videoState == VIDEO_STATE_PLAY){
-                if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+//                if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
                     mRenderer.updata(width, height, data);
                     glSurfaceView.requestRender();
                     if(!videoIsPlay){ // 进入播放状态
                         videoIsPlay = true;
                         videoHandler.sendEmptyMessage(VIDEO_STATE_PLAY);
                     }
-                } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
-                    if(isWhetherHaveTime){ // 是否已经判断有无时间
-                        if(videoIsHaveTime){  // 有实时时间
-                            // 添加判断时间差判断 是否显示
-                            mRenderer.updata(width, height, data);
-                            glSurfaceView.requestRender();
-                            if(!videoIsPlay){ // 进入播放状态
-                                videoIsPlay = true;
-                                isBackPlayVideoSuccess = true; // 播放成功
-                                videoHandler.sendEmptyMessage(VIDEO_STATE_PLAY);
-                            }
-                        } else { // 没有实时时间
-                            mRenderer.updata(width, height, data);
-                            glSurfaceView.requestRender();
-                            if(!videoIsPlay){ // 进入播放状态
-                                videoIsPlay = true;
-                                isBackPlayVideoSuccess = true; // 播放成功
-                                videoHandler.sendEmptyMessage(VIDEO_STATE_PLAY);
-                            }
-                        }
-                    }
-                }
+//                } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
+//                    if(isWhetherHaveTime){ // 是否已经判断有无时间
+//                        if(videoIsHaveTime){  // 有实时时间
+//                            // 添加判断时间差判断 是否显示
+//                            mRenderer.updata(width, height, data);
+//                            glSurfaceView.requestRender();
+//                            if(!videoIsPlay){ // 进入播放状态
+//                                videoIsPlay = true;
+//                                isBackPlayVideoSuccess = true; // 播放成功
+//                                videoHandler.sendEmptyMessage(VIDEO_STATE_PLAY);
+//                            }
+//                        } else { // 没有实时时间
+//                            mRenderer.updata(width, height, data);
+//                            glSurfaceView.requestRender();
+//                            if(!videoIsPlay){ // 进入播放状态
+//                                videoIsPlay = true;
+//                                isBackPlayVideoSuccess = true; // 播放成功
+//                                videoHandler.sendEmptyMessage(VIDEO_STATE_PLAY);
+//                            }
+//                        }
+//                    }
+//                }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             Log.e(LOG, e.toString());
@@ -880,39 +901,67 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     long date3 = 0;
     @Override // 视频播放时间
     public void videoUpDateTime(Date date) {
-        if (isWhetherHaveTime){
-            // 处理数据
-            if (videoIsHaveTime){ // 判断时间差
-
-            } else { // 播放
-
-            }
-        } else {
-            if (tempNum == 0){
-                date1 = date.getTime();
-                tempNum++;
-            } else if (tempNum == 1){
-                date2 = date.getTime();
-                if (date1 != date2){
-                    isWhetherHaveTime = true; // 判断完成
-                    videoIsHaveTime = true; // 有实时时间
-                    // 处理数据
-                    Log.v(LOG,"有实时时间");
-                } else {
+        Log.v(LOG,date.toString());
+        if (videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
+            isWhetherHaveTime = true;
+            videoIsHaveTime = false;
+            videoState = VIDEO_STATE_PLAY;
+        } else if (videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK) { // 回放
+            if (isWhetherHaveTime){
+                // 处理数据
+                if (videoIsHaveTime){ // 判断时间差  收到时间和现在播放时间差小于5分钟，或时间差是24小时 就播放 否则缓冲等待
+                    if (Math.abs(nowTime.getTime()-date.getTime())<5*60*1000 || Math.abs(nowTime.getTime()-date.getTime())>23.9*60*60*1000){
+                        // 更新时间
+                        if (videoState == VIDEO_STATE_PLAY_WAIT){
+                            videoState = VIDEO_STATE_PLAY;
+                        }
+                    }
+                } else { // 播放
+                    if (videoState == VIDEO_STATE_PLAY_WAIT){
+                        videoState = VIDEO_STATE_PLAY;
+                    }
+                }
+            } else {
+                if (tempNum == 0){
+                    date1 = date.getTime();
                     tempNum++;
+                } else if (tempNum == 1){
+                    date2 = date.getTime();
+                    if (date1 != date2){
+                        isWhetherHaveTime = true; // 判断完成
+                        videoIsHaveTime = true; // 有实时时间
+                        // 处理数据
+                        Log.v(LOG,"有实时时间");
+                        if (Math.abs(nowTime.getTime()-date.getTime())<5*60*1000 || Math.abs(nowTime.getTime()-date.getTime())>23.9*60*60*1000){
+                            // 更新时间
+                            if (videoState == VIDEO_STATE_PLAY_WAIT){
+                                videoState = VIDEO_STATE_PLAY;
+                            }
+                        }
+                    } else {
+                        tempNum++;
+                    }
+                } else if(tempNum == 2){
+                    date3 = date.getTime();
+                    if (date1 != date3){
+                        videoIsHaveTime = true; // 有实时时间
+                        isBackPlayVideoSuccess = true;
+                        Log.v(LOG,"有实时时间");
+                        if (Math.abs(nowTime.getTime()-date.getTime())<5*60*1000 || Math.abs(nowTime.getTime()-date.getTime())>23.9*60*60*1000){
+                            // 更新时间
+                            if (videoState == VIDEO_STATE_PLAY_WAIT){
+                                videoState = VIDEO_STATE_PLAY;
+                            }
+                        }
+                    } else {
+                        videoIsHaveTime = false; // 没有实时时间
+                        Log.v(LOG,"没有实时时间");
+                        if (videoState == VIDEO_STATE_PLAY_WAIT){
+                            videoState = VIDEO_STATE_PLAY;
+                        }
+                    }
+                    isWhetherHaveTime = true; // 判断完成
                 }
-            } else if(tempNum == 2){
-                date3 = date.getTime();
-                if (date1 != date3){
-                    videoIsHaveTime = true; // 有实时时间
-                    isBackPlayVideoSuccess = true;
-                    Log.v(LOG,"有实时时间");
-                    //
-                } else {
-                    videoIsHaveTime = false; // 没有实时时间
-                    Log.v(LOG,"没有实时时间");
-                }
-                isWhetherHaveTime = true; // 判断完成
             }
         }
     }
@@ -998,6 +1047,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      * 10005：暂停
      * 10006: 查询视频记录成功
      * 10007: 停止
+     * 10008: 播放等待
      */
     public static final int VIDEO_STATE_NOINIT = 10000;
     public static final int VIDEO_STATE_INIT = 10001;
@@ -1007,6 +1057,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     public static final int VIDEO_STATE_PAUSE = 10005;
     public static final int VIDEO_STATE_SEARCH = 10006;
     public static final int VIDEO_STATE_STOP = 10007;
+    public static final int VIDEO_STATE_PLAY_WAIT = 10008;
 
     /**
      * 播放错误：
