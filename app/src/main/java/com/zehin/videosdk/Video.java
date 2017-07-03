@@ -110,18 +110,21 @@ public class Video {
 
     /**
      * 播放失败返回
-     * @param type 0:连接超时 1：云终端不在线  2：镜头不在线
+     * @param type 0:连接超时 1：云终端不在线  2：镜头不在线  3:大洞成功
      */
     public void playVideoFailed(int type){
         switch (type){
             case 0:
-                listener.videoErrorListener(VIDEO_ERROR_STATE_PLAY);
+                listener.videoErrorListener(VideoLayout.VIDEO_ERROR_STATE_PLAY);
                 break;
             case 1:
-                listener.videoErrorListener(VIDEO_ERROR_STATE_SEARCH1);
+                listener.videoErrorListener(VideoLayout.VIDEO_ERROR_STATE_SEARCH1);
                 break;
             case 2:
-                listener.videoErrorListener(VIDEO_ERROR_STATE_SEARCH2);
+                listener.videoErrorListener(VideoLayout.VIDEO_ERROR_STATE_SEARCH2);
+                break;
+            case 3:
+                listener.videoErrorListener(VideoLayout.VIDEO_ERROR_STATE_SUCCESS);
                 break;
         }
     }

@@ -121,7 +121,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
 //                    animationPlayButtonRestart.setFillAfter(true);
 //                    animationPlayButtonRestart.setFillBefore(false);
 //                    playButtonBig.setImageResource(R.drawable.video_start_big_button);
-//                    playButtonBig.setVisibility(View.VISIBLE);
+                    playButtonBig.setVisibility(View.GONE);
 //                    playButtonBig.startAnimation(animationPlayButtonRestart);
                 }
                 // 加载
@@ -170,6 +170,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         } else if(v == smallScreenFullButton){ // 全屏
             listener.videoPlayFullScreenClickLinstener();
         } else if(v == fullScreenBackButton){ // 退出
+            exitPlayVideo();
             listener.videoPlayExitClickLinstener();
         } else if(v == fullScreenDateButton){ // 日历
             // 显示日历
@@ -376,8 +377,9 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             nowTime = dateUtil.getIntToDate(mYear,mMonth+1,mDay);
             video.setNowTime(nowTime);
             // 停流
-            if (videoIsPlay&&isBackPlayVideoSuccess){
+            if (videoIsPlay || isBackPlayVideoSuccess){
                 videoHandler.sendEmptyMessage(VIDEO_STATE_STOP);
+                videoState = VIDEO_STATE_LOGIN;
             }
             // 修改状态
             videoIsPlay = false;
@@ -522,23 +524,36 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             case VIDEO_STATE_NOINIT:
             case VIDEO_STATE_INIT:
             case VIDEO_STATE_CONNET:
-                break;
             case VIDEO_STATE_LOGIN:
-                // 0:登录超时; -1:连接中心失败; -2:用户名参数不对; -3:发送函数失败
-                int logout = VideoSDK.vPaasSDK_Logout();
-                Log.v(LOG, "vPaasSDK_Logout:"+logout);
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        // 0:登录超时; -1:连接中心失败; -2:用户名参数不对; -3:发送函数失败
+                        int logout = VideoSDK.vPaasSDK_Logout();
+                        Log.v(LOG, "vPaasSDK_Logout:"+logout);
+                    }
+                }.start();
                 break;
             case VIDEO_STATE_PLAY_WAIT:
             case VIDEO_STATE_PLAY:
             case VIDEO_STATE_PAUSE:
+            case VIDEO_STATE_STOP:
             case VIDEO_STATE_SEARCH:
-                // 停止播放
-                if(0 != VideoSDK.vPaasSDK_StopPlay()){
-                    Log.e(LOG, "stopPlayStream fail");
-                }
-                // 0:登录超时; -1:连接中心失败; -2:用户名参数不对; -3:发送函数失败
-                int logout1 = VideoSDK.vPaasSDK_Logout();
-                Log.v(LOG, "vPaasSDK_Logout:"+logout1);
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        // 停止播放
+                        if(0 != VideoSDK.vPaasSDK_StopPlay()){
+                            Log.e(LOG, "stopPlayStream fail");
+                        }
+                        // 0:登录超时; -1:连接中心失败; -2:用户名参数不对; -3:发送函数失败
+                        int logout1 = VideoSDK.vPaasSDK_Logout();
+                        Log.v(LOG, "vPaasSDK_Logout:"+logout1);
+                    }
+                }.start();
+                break;
         }
     }
 
@@ -978,6 +993,9 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             case VIDEO_ERROR_STATE_SEARCH2: // 镜头不在线
                 videoHandler.sendEmptyMessage(VIDEO_ERROR_STATE_SEARCH2);
                 break;
+            case VIDEO_ERROR_STATE_SUCCESS: // 大洞成功
+
+                break;
         }
     }
 
@@ -1070,6 +1088,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
      * 20007：跳转
      * 20008：查询云终端不在线
      * 20009：查询镜头不在线
+     * 20010: 大洞成功
      */
     public static final int VIDEO_ERROR_STATE_INIT = 20001;
     public static final int VIDEO_ERROR_STATE_CONNET = 20002;
@@ -1080,6 +1099,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
     public static final int VIDEO_ERROR_STATE_SEEK = 20007;
     public static final int VIDEO_ERROR_STATE_SEARCH1 = 20008;
     public static final int VIDEO_ERROR_STATE_SEARCH2 = 20009;
+    public static final int VIDEO_ERROR_STATE_SUCCESS = 20010;
 
     /**
      * 视频布局状态：

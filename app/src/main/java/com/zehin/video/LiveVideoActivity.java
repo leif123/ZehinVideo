@@ -24,16 +24,13 @@ import java.util.UUID;
 
 import static com.zehin.video.constants.Constants.LOG;
 
-public class LiveVideoActivity extends Activity implements VideoClickListener, VideoLayout.VideoLayoutClickListener {
+public class LiveVideoActivity extends Activity implements VideoLayout.VideoLayoutClickListener {
 
     // 视频控件
     private VideoLayout videoLayout;
 
     // 视频
     private Video video = null;
-
-    // 消息处理
-    private Handler videoHandler = null;
 
     private APPScreen screen = null;
 
@@ -65,67 +62,6 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
         videoLayout.setVideoPlayParams(IP, IP, camId, streamType);
         // 开始播放
         videoLayout.startPlayVideo();
-    }
-
-    /**
-     * 消息处理
-     */
-    private void handlerVideoMessage() {
-        videoHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-//                switch (msg.what){
-//                    case Video.VIDEO_ERROR_STATE_INIT:
-//                    case Video.VIDEO_ERROR_STATE_CONNET:
-//                        Toast.makeText(LiveVideoActivity.this, "连接服务失败！", Toast.LENGTH_SHORT).show();
-//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
-//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
-//                        break;
-//                    case Video.VIDEO_ERROR_STATE_LOGIN:
-//                    case Video.VIDEO_ERROR_STATE_PLAY:
-//                        Toast.makeText(LiveVideoActivity.this, "连接超时!", Toast.LENGTH_SHORT).show();
-//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON);
-//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_SMAILSTOPBUTTON;
-//                        break;
-//                    case Video.VIDEO_STATE_NOINIT: // 恢复未初始化状态
-//                        videoResumeNoInfoState();
-//                        break;
-//                    case Video.VIDEO_STATE_PLAY: // 开始播放
-//                        videoLayout.setVideoPlayLoadStateVisibility(VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE);
-//                        videoLayout.videoPlayState = VideoLayout.VIDEOLAYOUT_CENTER_STATE_HIDE;
-//                        break;
-//                    default:
-//                        break;
-//                }
-            }
-        };
-    }
-
-    /**
-     * Video监听
-     * ---------------------------------------------------------------------------------------------
-     */
-
-    @Override
-    public void videoPlayRecord(List<VideoPlayRecord> list) {
-
-    }
-
-    @Override
-    public void videoMessageData(int width, int height, byte[] data) {
-
-    }
-
-    @Override
-    public void videoUpDateTime(Date date) {
-
-    }
-
-    @Override
-    public void videoErrorListener(int keyError) {
-        Log.e(LOG, "keyError:"+keyError);
-        videoHandler.sendEmptyMessage(keyError);
     }
 
     /**
@@ -176,10 +112,6 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
 
     }
 
-    /*
-    ------------------------------------------------------------------------------------------------
-     */
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -192,38 +124,5 @@ public class LiveVideoActivity extends Activity implements VideoClickListener, V
             videoLayout.exitPlayVideo();
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    /**
-     * 恢复未初始化状态
-     */
-    private void videoResumeNoInfoState(){
-        // 退出登录
-        switch (video.videoState){
-            case Video.VIDEO_STATE_LOGIN: // 退出登录
-                new Thread(){
-                    @Override
-                    public void run() {
-                        super.run();
-                        video.logoutVideo();
-                    }
-                }.start();
-                break;
-            case Video.VIDEO_STATE_PLAY: // 停止播放，退出登录
-                new Thread(){
-                    @Override
-                    public void run() {
-                        super.run();
-                        video.stopVideo();
-                        video.logoutVideo();
-                    }
-                }.start();
-                break;
-            default:
-                break;
-        }
-        // 修改状态
-        video.videoState = Video.VIDEO_STATE_NOINIT;
-        video.videoIsPlay = false;
     }
 }

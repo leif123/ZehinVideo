@@ -37,7 +37,7 @@ import static com.zehin.video.constants.Constants.LOG;
  * Created by wlf on 2017/6/11.
  */
 
-public class BackPlayVideoActivity extends Activity implements VideoClickListener, VideoLayout.VideoLayoutClickListener {
+public class BackPlayVideoActivity extends Activity implements VideoLayout.VideoLayoutClickListener {
 
     // 视频控件
     private VideoLayout videoLayout;
@@ -197,32 +197,32 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
      * ---------------------------------------------------------------------------------------------
      */
 
-    @Override // 返回视频记录列表
-    public void videoPlayRecord(List<VideoPlayRecord> list) {
-        data.clear();
-        data.addAll(list);
-        videoHandler.sendEmptyMessage(Video.VIDEO_STATE_SEARCH);
-    }
-
-    @Override // 收到播放流
-    public void videoMessageData(int width, int height, byte[] data) {
-
-    }
-
-    @Override // 视频播放时间
-    public void videoUpDateTime(Date date) {
-        // 更新下边栏时间
-        videoHandler.sendEmptyMessage(VIDEO_CHANGE_TIME);
-        // 更新进度条
-        videoHandler.sendEmptyMessage(VIDEO_CHANGE_SEEKBAR);
-
-    }
-
-    @Override
-    public void videoErrorListener(int keyError) {
-        Log.e(LOG, "keyError:"+keyError);
-        videoHandler.sendEmptyMessage(keyError);
-    }
+//    @Override // 返回视频记录列表
+//    public void videoPlayRecord(List<VideoPlayRecord> list) {
+//        data.clear();
+//        data.addAll(list);
+//        videoHandler.sendEmptyMessage(Video.VIDEO_STATE_SEARCH);
+//    }
+//
+//    @Override // 收到播放流
+//    public void videoMessageData(int width, int height, byte[] data) {
+//
+//    }
+//
+//    @Override // 视频播放时间
+//    public void videoUpDateTime(Date date) {
+//        // 更新下边栏时间
+//        videoHandler.sendEmptyMessage(VIDEO_CHANGE_TIME);
+//        // 更新进度条
+//        videoHandler.sendEmptyMessage(VIDEO_CHANGE_SEEKBAR);
+//
+//    }
+//
+//    @Override
+//    public void videoErrorListener(int keyError) {
+//        Log.e(LOG, "keyError:"+keyError);
+////        videoHandler.sendEmptyMessage(keyError);
+//    }
 
     /**
      * VideoLayout监听
@@ -253,7 +253,6 @@ public class BackPlayVideoActivity extends Activity implements VideoClickListene
 
     @Override // 全屏 退出button
     public void videoPlayExitClickLinstener() {
-//        videoResumeNoInfoState();
         finish();
     }
 

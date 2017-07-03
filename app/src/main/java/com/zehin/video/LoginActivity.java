@@ -23,7 +23,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
 //    private int camId = 1062091;
 //   private int camId = 5126; // 交通公司
 //    private int camId = 13558;
-    private int camId = 14920;
+//    private int camId = 14920;
+    private int camId = 14041;
     private int streamType = 0;
 
     @Override

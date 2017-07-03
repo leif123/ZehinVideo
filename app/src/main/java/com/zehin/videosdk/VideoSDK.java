@@ -166,7 +166,7 @@ public class VideoSDK {
 
     /**
      * 播放失败返回
-     * @param type  0:连接超时 1：云终端不在线  2：镜头不在线
+     * @param type  0:连接超时 1：云终端不在线  2：镜头不在线  3:大洞成功
      */
     public static void vPaasSDK_PlayFailed(int type){
         Video.getInstance().playVideoFailed(type);
