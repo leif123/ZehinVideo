@@ -5,11 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.zehin.video.view.VideoLayout
+    <com.zehin.videosdk.view.VideoLayout
         android:id="@+id/video"
         android:layout_width="match_parent"
-        android:layout_height="250dp">
-
-    </com.zehin.video.view.VideoLayout>
+        android:layout_height="220dp">
+    </com.zehin.videosdk.view.VideoLayout>
 
 </RelativeLayout>

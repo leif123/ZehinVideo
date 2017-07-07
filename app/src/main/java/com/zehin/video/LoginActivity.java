@@ -24,7 +24,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
 //   private int camId = 5126; // 交通公司
 //    private int camId = 13558;
 //    private int camId = 14920;
-    private int camId = 14041;
+    private int camId = 13768;
+//    private int camId = 14244; // 没有时间
     private int streamType = 0;
 
     @Override
@@ -41,13 +42,15 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     public void onClick(View v) {
         if (v == button1){
             Intent intent = new Intent(LoginActivity.this,LiveVideoActivity.class);
-            intent.putExtra("IP",IP);
+            intent.putExtra("stunIP",IP);
+            intent.putExtra("centerIP",IP);
             intent.putExtra("camId",camId);
             intent.putExtra("streamType",streamType);
             startActivity(intent);
         } else if(v == button2){
             Intent intent = new Intent(LoginActivity.this,BackPlayVideoActivity.class);
-            intent.putExtra("IP",IP);
+            intent.putExtra("stunIP",IP);
+            intent.putExtra("centerIP",IP);
             intent.putExtra("camId",camId);
             intent.putExtra("streamType",streamType);
             startActivity(intent);

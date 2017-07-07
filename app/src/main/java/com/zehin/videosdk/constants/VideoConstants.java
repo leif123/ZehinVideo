@@ -1,10 +1,10 @@
-package com.zehin.video.constants;
+package com.zehin.videosdk.constants;
 
 /**
  * Created by Administrator on 2017/6/10 0010.
  */
 
-public class Constants {
+public class VideoConstants {
 
     /**
      * LOG

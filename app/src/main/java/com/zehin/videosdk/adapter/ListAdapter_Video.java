@@ -1,4 +1,4 @@
-package com.zehin.videosdk;
+package com.zehin.videosdk.adapter;
 
 import java.util.List;
 
@@ -12,7 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.zehin.video.R;
-import com.zehin.video.utils.DateUtil;
+import com.zehin.videosdk.utils.DateUtil;
+import com.zehin.videosdk.entity.VideoPlayRecord;
 
 /**
  *	日期		:	2016-1-16<br>

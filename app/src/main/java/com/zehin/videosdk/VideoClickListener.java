@@ -1,5 +1,7 @@
 package com.zehin.videosdk;
 
+import com.zehin.videosdk.entity.VideoPlayRecord;
+
 import java.util.Date;
 import java.util.List;
 
@@ -31,7 +33,7 @@ public interface VideoClickListener {
 
     /**
      * 播放错误
-     * @param keyError 1:初始化 2:连接 3:登陆 4:播放
+     * @param keyError
      */
     public void videoErrorListener(int keyError);
 }

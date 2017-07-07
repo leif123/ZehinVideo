@@ -1,12 +1,11 @@
-package com.zehin.video.view;
+package com.zehin.videosdk.view;
 
 import android.content.Context;
 import android.opengl.GLException;
 import android.opengl.GLSurfaceView.Renderer;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
-import com.zehin.video.utils.APPScreen;
+import com.zehin.videosdk.utils.APPScreen;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,7 +16,7 @@ import java.nio.ShortBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static com.zehin.video.constants.Constants.LOG;
+import static com.zehin.videosdk.constants.VideoConstants.LOG;
 
 public class SimpleRenderer implements Renderer {
 	private int mScreenWidth, mScreenHeight;

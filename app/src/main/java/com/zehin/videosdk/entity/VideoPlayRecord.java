@@ -1,4 +1,4 @@
-package com.zehin.videosdk;
+package com.zehin.videosdk.entity;
 
 import java.util.Date;
 

@@ -1,4 +1,4 @@
-package com.zehin.video.utils;
+package com.zehin.videosdk.utils;
 
 import android.util.Log;
 
@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.zehin.video.constants.Constants.LOG;
+import static com.zehin.videosdk.constants.VideoConstants.LOG;
 
 /**
  * Created by wlf on 2017/6/11.
@@ -64,6 +64,7 @@ public class DateUtil {
      */
     public Date getIntToDate(int year,int month, int day){
         try{
+            Log.v(LOG,"---------->时间："+year+":"+month+":"+day);
             date = new SimpleDateFormat(DATE_FORMAT_YMD).parse(year+"-"+month+"-"+day);
         }
         catch(Exception e){

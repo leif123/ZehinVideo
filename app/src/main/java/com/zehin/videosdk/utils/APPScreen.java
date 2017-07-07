@@ -1,10 +1,7 @@
-package com.zehin.video.utils;
+package com.zehin.videosdk.utils;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.DisplayMetrics;
-
-import com.zehin.video.Application.VideoApplication;
 
 /**
  * Created by wlf on 2017/6/11.
