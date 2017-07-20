@@ -1,5 +1,6 @@
 package com.zehin.videosdk.view;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -7,6 +8,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -96,6 +98,12 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         initParams(context);
     }
 
+    private int getPixelsFromDp(int size){
+        DisplayMetrics metrics =new DisplayMetrics();
+        ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        return(size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
+    }
+
     /**
      * 点击事件监听
      * ---------------------------------------------------------------------------------------------
@@ -106,18 +114,22 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
             if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_LIVE){ // 直播
                 Log.v(LOG,"重播");
                 // 动画
-                animationPlayButtonRestart.setFillAfter(true);
-                animationPlayButtonRestart.setFillBefore(false);
+//                animationPlayButtonRestart.setFillBefore(true);
+//                animationPlayButtonRestart.setFillAfter(false);
                 playButtonBig.setImageResource(R.drawable.video_start_button);
                 playButtonBig.setVisibility(View.GONE);
                 playButtonBig.startAnimation(animationPlayButtonRestart);
+                videoState = VIDEO_STATE_NOINIT;
             } else if (videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK) { // 回放
                 Log.v(LOG,"回放");
-                animationPlayButtonRestart.setFillAfter(true);
-                animationPlayButtonRestart.setFillBefore(false);
+//                animationPlayButtonRestart.setFillBefore(true);
+//                animationPlayButtonRestart.setFillAfter(false);
                 playButtonBig.setImageResource(R.drawable.video_start_big_button);
                 playButtonBig.setVisibility(View.GONE);
                 playButtonBig.startAnimation(animationPlayButtonRestart);
+                if(videoState == VIDEO_STATE_CONNET){
+                    videoState = VIDEO_STATE_NOINIT;
+                }
             }
             // 加载
             progressBar.setVisibility(View.VISIBLE);
@@ -188,8 +200,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                         } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
                             playButtonBig.setImageResource(R.drawable.video_stop_big_button);
                         }
-                        animationPlayButtonRestart.setFillBefore(true);
-                        animationPlayButtonRestart.setFillAfter(false);
+//                        animationPlayButtonRestart.setFillBefore(true);
+//                        animationPlayButtonRestart.setFillAfter(false);
                         playButtonBig.setVisibility(View.VISIBLE);
                         Log.e(LOG,"初始化失败");
                         break;
@@ -203,8 +215,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                         } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
                             playButtonBig.setImageResource(R.drawable.video_stop_big_button);
                         }
-                        animationPlayButtonRestart.setFillBefore(true);
-                        animationPlayButtonRestart.setFillAfter(false);
+//                        animationPlayButtonRestart.setFillBefore(true);
+//                        animationPlayButtonRestart.setFillAfter(false);
                         playButtonBig.setVisibility(View.VISIBLE);
                         Log.e(LOG,"连接服务失败");
                         break;
@@ -219,8 +231,8 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
                         } else if(videoPlayType == VIDEOLAYOUT_PLAY_TYPE_PLAYBACK){ // 回放
                             playButtonBig.setImageResource(R.drawable.video_stop_big_button);
                         }
-                        animationPlayButtonRestart.setFillBefore(true);
-                        animationPlayButtonRestart.setFillAfter(false);
+//                        animationPlayButtonRestart.setFillBefore(true);
+//                        animationPlayButtonRestart.setFillAfter(false);
                         playButtonBig.setVisibility(View.VISIBLE);
                         Log.e(LOG,"连接超时");
                         break;
@@ -1072,14 +1084,14 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
          */
         videoPlayFoward = new LinearLayout(context);
         videoPlayFoward.setBackgroundColor(Color.parseColor("#80383838"));
-        videoPlayFoward.setPadding(20,20,20,20);
+        videoPlayFoward.setPadding(getPixelsFromDp(10),getPixelsFromDp(10),getPixelsFromDp(10),getPixelsFromDp(10));
         videoPlayFoward.setGravity(Gravity.CENTER);
         videoPlayFoward.setOrientation(LinearLayout.VERTICAL);
         LayoutParams videoPlayFowardParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         videoPlayFowardParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         LinearLayout center = new LinearLayout(context);
         center.setId(R.id.VideoLayout_Center_Id);
-        LayoutParams centerParams = new LayoutParams(100,100);
+        LayoutParams centerParams = new LayoutParams(getPixelsFromDp(50),getPixelsFromDp(50));
         centerParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         centerParams.addRule(RelativeLayout.CENTER_VERTICAL);
         addView(center,centerParams);
@@ -1090,7 +1102,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
          */
         fowardImage = new ImageView(context);
         fowardImage.setImageResource(android.R.drawable.ic_media_ff);
-        LinearLayout.LayoutParams fowardImageParams = new LinearLayout.LayoutParams(100,80);
+        LinearLayout.LayoutParams fowardImageParams = new LinearLayout.LayoutParams(getPixelsFromDp(50),getPixelsFromDp(40));
         videoPlayFoward.addView(fowardImage,fowardImageParams);
         /**
          * 添加快进Text
@@ -1107,7 +1119,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         smallScreenBottomBarLayout = new LinearLayout(context);
         smallScreenBottomBarLayout.setBackgroundColor(Color.parseColor("#80383838"));
         smallScreenBottomBarLayout.setGravity(Gravity.RIGHT);
-        LayoutParams smallScreenBottomBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 90);
+        LayoutParams smallScreenBottomBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getPixelsFromDp(45));
         smallScreenBottomBarLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
         smallScreenBottomBarLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         addView(smallScreenBottomBarLayout, smallScreenBottomBarLayoutParams);
@@ -1117,7 +1129,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         smallScreenFullButton = new RelativeLayout(context);
         smallScreenFullButton.setGravity(Gravity.CENTER);
         smallScreenFullButton.setOnClickListener(this);
-        LayoutParams smaillScreenFullButtonParams = new LayoutParams(100, ViewGroup.LayoutParams.MATCH_PARENT);
+        LayoutParams smaillScreenFullButtonParams = new LayoutParams(getPixelsFromDp(50), ViewGroup.LayoutParams.MATCH_PARENT);
         smallScreenBottomBarLayout.addView(smallScreenFullButton, smaillScreenFullButtonParams);
         smaillScreenFullScreenImage = new ImageView(context);
         smaillScreenFullScreenImage.setImageResource(R.drawable.video_fullscreen);
@@ -1130,7 +1142,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         fullScreenBottomBarLayout = new LinearLayout(context);
         fullScreenBottomBarLayout.setBackgroundColor(Color.parseColor("#80383838"));
         fullScreenBottomBarLayout.setGravity(Gravity.CENTER_VERTICAL);
-        LayoutParams fullScreenBottomBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
+        LayoutParams fullScreenBottomBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getPixelsFromDp(50));
         fullScreenBottomBarLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         fullScreenBottomBarLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         addView(fullScreenBottomBarLayout, fullScreenBottomBarLayoutParams);
@@ -1144,7 +1156,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         playButton.setBackgroundResource(R.drawable.video_play_button);
         playButton.setOnClickListener(this);
         LinearLayout.LayoutParams playButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        playButtonParams.setMargins(20,0,18,0);
+        playButtonParams.setMargins(getPixelsFromDp(10),0,getPixelsFromDp(9),0);
         fullScreenBottomBarLayout.addView(playButton,playButtonParams);
         /**
          * 添加进度条
@@ -1161,7 +1173,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         playTime.setTextColor(Color.parseColor("#B3ffffff"));
         playTime.setOnClickListener(this);
         LinearLayout.LayoutParams playTimeParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        playTimeParams.setMargins(10,0,10,0);
+        playTimeParams.setMargins(getPixelsFromDp(5),0,getPixelsFromDp(5),0);
         fullScreenBottomBarLayout.addView(playTime,playTimeParams);
 
         /**
@@ -1170,7 +1182,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         fullScreenTopBarLayout =  new LinearLayout(context);
         fullScreenTopBarLayout.setBackgroundColor(Color.parseColor("#80383838"));
         fullScreenTopBarLayout.setGravity(Gravity.CENTER_VERTICAL);
-        LayoutParams fullScreenTopBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
+        LayoutParams fullScreenTopBarLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getPixelsFromDp(50));
         fullScreenTopBarLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         fullScreenTopBarLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         addView(fullScreenTopBarLayout, fullScreenTopBarLayoutParams);
@@ -1185,7 +1197,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         ImageView backImage = new ImageView(context);
         backImage.setImageResource(R.drawable.video_play_back_image);
         LinearLayout.LayoutParams backImageParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        backImageParams.setMargins(20,0,20,0);
+        backImageParams.setMargins(getPixelsFromDp(10),0,getPixelsFromDp(10),0);
         fullScreenBackButton.addView(backImage,backImageParams);
         TextView backText = new TextView(context);
         backText.setText("历史回放");
@@ -1204,12 +1216,12 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
          * 添加日历
          */
         fullScreenDateButton = new LinearLayout(context);
-        fullScreenDateButton.setPadding(40,0,40,0);
+        fullScreenDateButton.setPadding(getPixelsFromDp(20),0,getPixelsFromDp(20),0);
         fullScreenDateButton.setGravity(Gravity.CENTER);
         fullScreenDateButton.setBackgroundResource(R.drawable.video_play_date_button);
         fullScreenDateButton.setOnClickListener(this);
         LinearLayout.LayoutParams fullScreenDateButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        fullScreenDateButtonParams.setMargins(0,10,0,10);
+        fullScreenDateButtonParams.setMargins(0,getPixelsFromDp(5),0,getPixelsFromDp(5));
         dateButtonLayout.addView(fullScreenDateButton,fullScreenDateButtonParams);
         ImageView dateImage = new ImageView(context);
         dateImage.setImageResource(R.drawable.video_play_date);
@@ -1221,7 +1233,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         dateText.setTextColor(Color.parseColor("#ffffff"));
         dateText.setTextSize(16);
         LinearLayout.LayoutParams dateTextParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dateTextParams.setMargins(16,0,0,0);
+        dateTextParams.setMargins(getPixelsFromDp(8),0,0,0);
         fullScreenDateButton.addView(dateText,dateTextParams);
 
         /**
@@ -1230,7 +1242,7 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
         fullScreenMoreButton = new LinearLayout(context);
         fullScreenMoreButton.setGravity(Gravity.CENTER);
         fullScreenMoreButton.setOnClickListener(this);
-        LinearLayout.LayoutParams fullScreenMoreButtonParams = new LinearLayout.LayoutParams(120, ViewGroup.LayoutParams.MATCH_PARENT);
+        LinearLayout.LayoutParams fullScreenMoreButtonParams = new LinearLayout.LayoutParams(getPixelsFromDp(60), ViewGroup.LayoutParams.MATCH_PARENT);
         fullScreenTopBarLayout.addView(fullScreenMoreButton,fullScreenMoreButtonParams);
         ImageView moreImage = new ImageView(context);
         moreImage.setImageResource(R.drawable.video_play_more);
@@ -1240,11 +1252,11 @@ public class VideoLayout extends RelativeLayout implements View.OnClickListener,
          * 添加 右边 视频列表 布局
          */
         videoPlayListLayout = new LinearLayout(context);
-        videoPlayListLayout.setPadding(10,10,10,10);
+        videoPlayListLayout.setPadding(getPixelsFromDp(5),getPixelsFromDp(5),getPixelsFromDp(5),getPixelsFromDp(5));
         videoPlayListLayout.setBackgroundColor(Color.parseColor("#806a6a70"));
-        LayoutParams videoPlayListLayoutParams = new LayoutParams(420, ViewGroup.LayoutParams.MATCH_PARENT);
+        LayoutParams videoPlayListLayoutParams = new LayoutParams(getPixelsFromDp(210), ViewGroup.LayoutParams.MATCH_PARENT);
         videoPlayListLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        videoPlayListLayoutParams.setMargins(0,100,0,100);
+        videoPlayListLayoutParams.setMargins(0,getPixelsFromDp(50),0,getPixelsFromDp(50));
         addView(videoPlayListLayout,videoPlayListLayoutParams);
 
         // 添加视频列表

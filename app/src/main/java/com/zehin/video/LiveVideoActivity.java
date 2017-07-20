@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
@@ -60,7 +61,7 @@ public class LiveVideoActivity extends Activity implements VideoLayout.VideoLayo
         if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // 设置小屏
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            videoLayout.setLayoutParams(new RelativeLayout.LayoutParams(screen.getAPPScreenWidth(), 440));
+            videoLayout.setLayoutParams(new RelativeLayout.LayoutParams(screen.getAPPScreenWidth(), getPixelsFromDp(220)));
         } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             // 设置全屏
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -78,7 +79,7 @@ public class LiveVideoActivity extends Activity implements VideoLayout.VideoLayo
         if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             // 设置小屏
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            videoLayout.setLayoutParams(new RelativeLayout.LayoutParams(screen.getAPPScreenWidth(), 440));
+            videoLayout.setLayoutParams(new RelativeLayout.LayoutParams(screen.getAPPScreenWidth(), getPixelsFromDp(220)));
             return true;
         } else {
             // 退出播放
@@ -86,4 +87,11 @@ public class LiveVideoActivity extends Activity implements VideoLayout.VideoLayo
         }
         return super.onKeyDown(keyCode, event);
     }
+
+    private int getPixelsFromDp(int size){
+        DisplayMetrics metrics =new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        return(size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.zehin.videosdk.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.DisplayMetrics;
 
@@ -31,5 +32,4 @@ public class APPScreen {
     public int getAPPScreenHeight(){
         return context.getResources().getDisplayMetrics().heightPixels;
     }
-
 }
